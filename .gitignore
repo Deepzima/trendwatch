@@ -1,0 +1,12 @@
+# workspace_server save_digest output
+out/
+
+# python venv
+.venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+.vscode/

@@ -1,0 +1,17 @@
+# The MCP 2026-07-28 spec went final on 2026-07-28 and is a BREAKING change:
+# no initialize handshake, no Mcp-Session-Id, protocol metadata inline per
+# request. Pin an SDK version that speaks it; see README.md "Sanity checks first".
+mcp>=2.0.0
+openai>=3.0.0
+# Direct import in agent/trendwatch.py. The attack-path test stubs openai,
+# so this does not arrive as a transitive dep in that run.
+httpx2>=2.7.0
+pyjwt>=2.8.0
+cryptography>=42.0.0
+
+# Optional -- only needed for TRENDWATCH_TRACING=1 (distributed tracing to Jaeger
+# via OTLP). The agent runs fine without these; tracing just stays off. Install
+# both exporters so either OTLP port works: grpc :4317 (default) or http :4318.
+opentelemetry-sdk>=1.27.0
+opentelemetry-exporter-otlp-proto-grpc>=1.27.0
+opentelemetry-exporter-otlp-proto-http>=1.27.0

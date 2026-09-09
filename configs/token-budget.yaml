@@ -1,0 +1,15 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    localRateLimit:
+    - maxTokens: 5000
+      tokensPerFill: 5000
+      fillInterval: 300s
+      type: tokens
+  models:
+  - name: trend-pro
+    provider: openAI
+    params:
+      baseUrl: http://localhost:11434/v1
+      model: qwen3:8b
+      apiKey: ollama-does-not-check-this

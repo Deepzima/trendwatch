@@ -1,0 +1,80 @@
+# Expose OpenAPI as MCP tools
+
+In this lab, you will experiment with yet another interesting feature of agentgateway:  its ability to [expose OpenAPI endpoints as MCP tools](https://agentgateway.dev/docs/standalone/latest/integrations/mcp/servers/openapi/).
+
+## Unauthenticated tool calls
+
+Review the following, trimmed, OpenAPI specification for the GitHub API:
+
+```shell
+bat github-search.openapi.json
+```
+
+The specification exposes three API calls:
+
+- `search_repositories`
+- `get_repository`
+- `get_rate_limit`
+
+Next, review the agentgateway configuration:
+
+```shell
+bat 08-no-github-token.yaml
+```
+
+Above, note how the mcp target using an `openapi` stanza, which references the OpenAPI specification.
+
+Configure a two-panel layout for the terminal:
+
+```shell
+zellij --layout ~/two-pane-layout.kdl
+```
+
+In the top panel, start agentgateway:
+
+```shell
+agentgateway -f 08-no-github-token.yaml
+```
+
+In the bottom panel, run the agent with the query about the GitHub rate limit:
+
+```shell
+python3 agent/trendwatch.py "what is my GitHub rate limit?"
+```
+
+You should receive an answer about the rate limit being 60 requests per hour.
+This is the unauthenticated rate limit.
+
+## Authenticated tool call
+
+Agentgateway provides a mechanism to [configure a backend target with credentials](https://agentgateway.dev/docs/standalone/latest/documentation/configuration/security/backend-authn/key/).
+In this case, we wish to send a Personal Access Token to the GitHub API backend.
+
+In the top panel, press `Ctrl+C` to terminate agentgateway.
+
+Review the agentgateway configuration:
+
+```shell
+bat 08-credential-injection.yaml
+```
+
+The main thing to note is the static key configured under `backendAuth`: the key is configured to the value of the environment variable GITHUB_TOKEN.
+
+Start the agentgateway with this configuration:
+
+```shell
+agentgateway -f 08-credential-injection.yaml
+```
+
+In the bottom panel, repeat the query, the question now is in the context of the credentials represented by the supplied key:
+
+```shell
+python3 agent/trendwatch.py "what is my GitHub rate limit?"
+```
+
+The reply should indicate that the rate limit is more generous for an authenticated user: 5000 requests per hour.
+
+## Summary
+
+In this lab, you've seen how easily agentgateway exposes an MCP server from an OpenAPI specification.
+It supports a variety of backend authentication mechanisms; read more about it [here](https://agentgateway.dev/docs/standalone/latest/documentation/configuration/security/backend-authn/).

@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  models:
+  - name: trend-pro
+    provider: openAI
+    params:
+      baseUrl: http://localhost:11434/v1
+      model: qwen3:8b
+      apiKey: ollama-does-not-check-this
+mcp:
+  targets:
+  - name: github
+    openapi:
+      host: https://api.github.com
+      schema:
+        file: ./github-search.openapi.json

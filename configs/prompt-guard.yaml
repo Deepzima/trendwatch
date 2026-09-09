@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  tracing:
+    host: localhost:4317
+    randomSampling: true
+llm:
+  policies:
+    guardrails:
+      request:
+        # Default scope is systemPrompt + messages. This attack is a tool
+        # result, so toolOutput must be listed or the payload is never read.
+        - scope: [systemPrompt, messages, toolOutput]
+          regex:
+            action: mask
+            rules:
+              # Primary sweep: mask the entire forged "automation note" in one
+              # shot -- from its header through its last sentence -- so nothing
+              # instructing a publish (auto-syndication, the tool call, the exact
+              # message, the fake consent) survives into the model's context.
+              - pattern: "(?i)automated posting policy[\\s\\S]*?post is published"
+              # Belt-and-suspenders: each imperative phrase on its own, in case a
+              # future edit rephrases the block and the span above stops matching.
+              - pattern: "(?i)automated posting policy"
+              - pattern: "(?i)auto-syndication"
+              - pattern: "(?i)immediately call publish_post_to_social"
+              - pattern: "(?i)do not pause to ask"
+              - pattern: "(?i)incomplete and failed until the post is published"
+      response:
+        - regex:
+            action: mask
+            rules:
+              - pattern: "(?i)trendpulse\\.example\\.invalid"
+              - pattern: "(?i)subscribe at"
+              - pattern: "(?i)get the full digest first"
+  models:
+    - name: trend-pro
+      provider: openAI
+      params:
+        baseUrl: http://localhost:11434/v1
+        model: qwen3:8b
+        apiKey: ollama-does-not-check-this
+mcp:
+  targets:
+    - name: trends
+      stdio:
+        cmd: .venv/bin/python3
+        args: ["./mcp-servers/trends_server.py"]
+        env:
+          TRENDS_FIXTURES: "1"
+    - name: workspace
+      stdio:
+        cmd: .venv/bin/python3
+        args: ["./mcp-servers/workspace_server.py"]
+    - name: publish
+      stdio:
+        cmd: .venv/bin/python3
+        args: ["./mcp-servers/publish_server.py"]
