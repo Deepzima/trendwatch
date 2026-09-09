@@ -7,7 +7,7 @@ In this lab, you will experiment with yet another interesting feature of agentga
 Review the following, trimmed, OpenAPI specification for the GitHub API:
 
 ```shell
-bat github-search.openapi.json
+bat configs/github-search.openapi.json
 ```
 
 The specification exposes three API calls:
@@ -19,21 +19,15 @@ The specification exposes three API calls:
 Next, review the agentgateway configuration:
 
 ```shell
-bat 08-no-github-token.yaml
+bat configs/no-github-token.yaml
 ```
 
 Above, note how the mcp target using an `openapi` stanza, which references the OpenAPI specification.
 
-Configure a two-panel layout for the terminal:
-
-```shell
-zellij --layout ~/two-pane-layout.kdl
-```
-
 In the top panel, start agentgateway:
 
 ```shell
-agentgateway -f 08-no-github-token.yaml
+agentgateway -f configs/no-github-token.yaml
 ```
 
 In the bottom panel, run the agent with the query about the GitHub rate limit:
@@ -55,15 +49,30 @@ In the top panel, press `Ctrl+C` to terminate agentgateway.
 Review the agentgateway configuration:
 
 ```shell
-bat 08-credential-injection.yaml
+bat configs/credential-injection.yaml
 ```
 
 The main thing to note is the static key configured under `backendAuth`: the key is configured to the value of the environment variable GITHUB_TOKEN.
 
+### Create a GitHub token
+
+Visit GitHub [Personal access tokens](https://github.com/settings/personal-access-tokens) and generate a new token for yourself:
+
+- Give it a name
+- For "Repository access", just select "Public repositories"
+- No need to add any permissions
+- Click "Generate token"
+
+Copy the generated token to your clipboard so that you can configure the requisite environment variable:
+
+```shell
+export GITHUB_TOKEN="<paste your token here>"
+```
+
 Start the agentgateway with this configuration:
 
 ```shell
-agentgateway -f 08-credential-injection.yaml
+agentgateway -f configs/credential-injection.yaml
 ```
 
 In the bottom panel, repeat the query, the question now is in the context of the credentials represented by the supplied key:

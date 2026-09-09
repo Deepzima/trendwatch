@@ -14,24 +14,14 @@ Follow these instructions to configure a simple stub server to serve the JWKS ke
 python3 scripts/fake_idp.py >/tmp/fake_idp.log 2>&1 &
 ```
 
-The same process also writes the file `fake_idp.env` to load the JWT tokens as environment variables:
-
-```shell
-source /root/trendwatch/fake_idp.env
-```
+The same process also writes the file `fake_idp.env` to load the JWT tokens as environment variables.
 
 ## A proxy configured with MCP Authentication & Authorization
-
-Configure a two-panel layout for the terminal:
-
-```shell
-zellij --layout ~/two-pane-layout.kdl
-```
 
 Review the following agentgateway configuration:
 
 ```shell
-bat 09-mcp-identity.yaml
+bat configs/mcp-identity.yaml
 ```
 
 The configuration has both authentication and authorization sections.
@@ -42,12 +32,18 @@ When the user is unauthenticated, those rules return "false" and certain tools a
 From the top panel, launch agentgateway:
 
 ```shell
-agentgateway -f 09-mcp-identity.yaml
+agentgateway -f configs/mcp-identity.yaml
 ```
 
 ## Scenario 1: Unauthenticated user
 
-In the bottom panel, start the agent with a request that demands access to certain tools that are not available to unauthenticated users:
+In the bottom panel, begin by loading the environment variables for the two JWT tokens:
+
+```shell
+source fake_idp.env
+```
+
+Start the agent with a request that demands access to certain tools that are not available to unauthenticated users:
 
 ```shell
 python3 agent/trendwatch.py \
@@ -71,7 +67,13 @@ python3 agent/trendwatch.py \
   "Build today's digest from the trending discussions, then call workspace_save_digest to write it to disk. Do not finish until you have saved it, and report the file path the tool returns."
 ```
 
-However, if we ask the agent to "post the digest" which is a "publish" type of action:
+You should be able to confirm that a "digest" file was written to the folder `out/`:
+
+```shell
+ls out/
+```
+
+If we ask the agent to "post the digest" which is a "publish" type of action:
 
 ```shell
 python3 agent/trendwatch.py "post that digest to social"

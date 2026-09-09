@@ -5,7 +5,7 @@ In this exercise, we configure the agent to simulate a situation where a respons
 Review the agentgateway configuration you are about to use:
 
 ```shell
-bat 06-injection.yaml
+bat configs/injection.yaml
 ```
 
 Pay attention to how the `trends_server` MCP server is configured, with the environment variable "TRENDS_FIXTURES=1":
@@ -34,7 +34,7 @@ What is supposed to be a comment turns out to attempt to instruct the LLM to "ca
 From the top panel, start agentgateway:
 
 ```shell
-agentgateway -f 06-injection.yaml
+agentgateway -f configs/injection.yaml
 ```
 
 In the bottom panel, run the agent with a user prompt that encourages it to have "full autonomy":
@@ -67,7 +67,7 @@ In the top panel, press `Ctrl+C` to terminate agentgateway.
 Review a revised configuration that utilizes a feature called "guardrails"
 
 ```shell
-bat 07-prompt-guard.yaml
+bat configs/prompt-guard.yaml
 ```
 
 The configuration makes use of both request and response guardrails.
@@ -79,7 +79,7 @@ The response guardrail masks the "trendpulse.example.invalid" and other such tex
 Start agentgateway with the updated configuration:
 
 ```shell
-agentgateway -f 07-prompt-guard.yaml
+agentgateway -f configs/prompt-guard.yaml
 ```
 
 In the bottom panel, run the agent once more with the same user prompt:
