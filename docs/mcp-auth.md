@@ -73,13 +73,11 @@ You should be able to confirm that a "digest" file was written to the folder `ou
 ls out/
 ```
 
-If we ask the agent to "post the digest" which is a "publish" type of action:
+If we ask the agent to "post the digest" which is a "publish" type of action however, the agent is unable to fulfill that request:
 
 ```shell
 python3 agent/trendwatch.py "post that digest to social"
 ```
-
-The agent is unable to fulfill that request.
 
 ## Scenario 3: User with read-write access
 
