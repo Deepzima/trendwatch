@@ -11,7 +11,7 @@ repo_name = "eitansuez/trendwatch"
 # edit_uri = "edit/main/docs/"
 
 nav = [
-  "intro.md",
+  "index.md",
   "proxy-llm.md",
   "proxy-mcp.md",
   "prompt-guard.md",
