@@ -4,8 +4,21 @@ In this lab we explore how to configure MCP authentication and authorization in 
 
 You will explore exposing a different set of tools to the user based on whether they're authenticated, and if authenticated, based on their role, obtained from the user's JWT token.
 
+## Setup
+
 For this lab, instead of configuring a full-fledge identity provider such as KeyCloak for the authentication, we provide pre-minted JWT tokens in the form of environment variables READER_JWT and PUBLISHER_JWT.
-A simple stub server that serves the JWKS keyset is already running in the background.
+
+Follow these instructions to configure a simple stub server to serve the JWKS keyset in the background:
+
+```shell
+python3 scripts/fake_idp.py >/tmp/fake_idp.log 2>&1 &
+```
+
+The same process also writes the file `fake_idp.env` to load the JWT tokens as environment variables:
+
+```shell
+source /root/trendwatch/fake_idp.env
+```
 
 ## A proxy configured with MCP Authentication & Authorization
 
