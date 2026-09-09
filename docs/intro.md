@@ -60,7 +60,7 @@ The code consists of an agent named "TrendWatch", and a set of example MCP serve
 Run the following `tree` command to view the main project files:
 
 ```shell
-tree . -I __pycache__ -I tests
+tree . -I __pycache__ -I tests -I docs -I site
 ```
 
 ### Setup
@@ -125,11 +125,12 @@ The agent outputs some logging information such as:
 
 Ultimately, the agent outputs the response to the user, in this case the list of trending conversations.
 
-The agent should have returned with a tool request in the first turn.
-The tool fetches and filter trending discussions pertaining to AI from HackerNews, then responds with the top 5 trending discussions.
+In the first turn, the agent should respond with a tool request for `trending_discussions`.
+The tool fetches and filters trending discussions pertaining to AI from HackerNews, then responds with the top 5 trending discussions.
+In the second turn, the agent takes that information and presents it to the user.
 
 ## Summary
 
-So far, we explored a local setup to run an agentic loop:  an agent has access to a local model and MCP servers and can answer questions.  As the loop runs, the LLM is consulted, consults specific tools and incorporates the responses to further reason about the user's query, and ultimately produces a response.
+So far, we explored a local setup to run an agentic loop:  an agent has access to a local model and MCP servers, and can answer questions.  As the loop runs, the LLM is consulted, requests for specific tools to be called, and incorporates the responses to further reason about the user's query, and ultimately produces a response.
 
 In the next sections, we explore the agentgateway project, and how it plays a crucial role as a proxy to both LLM and MCP traffic.

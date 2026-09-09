@@ -30,28 +30,22 @@ By default agentgateway listens for LLM requests on port 4000.
 Run the command below and review the configuration for agentgateway:
 
 ```shell
-bat 01-llm-basic.yaml
+bat configs/llm-basic.yaml
 ```
 
 The configuration cites a single model, named "trend-pro", hiding the fact that "trend-pro" is backed by the qwen3 model.  Since this model runs locally with ollama, it does not require an apiKey.  In general, configuring the apiKey at the proxy has an advantage: the key is never exposed to end users, it is maintained by the platform team.
 
-Configure a two-panel layout for the terminal:
+Configure a two-panel layout so that you have two terminals running.
+
+Select the top panel, and start the proxy:
 
 ```shell
-zellij --layout ~/two-pane-layout.kdl
+agentgateway -f configs/llm-basic.yaml
 ```
 
-Select the top panel by clicking on it.
+Switch to the bottom panel (second terminal).
 
-Start the proxy:
-
-```shell
-agentgateway -f ~/01-llm-basic.yaml
-```
-
-Select the bottom panel by clicking on it.
-
-We can now configure the `trendwatch` agent to point at the proxy when calling the LLM:
+Configure the `trendwatch` agent to point at the proxy when calling the LLM:
 
 ```shell
 export LLM_BASE_URL=http://localhost:4000/v1
@@ -74,7 +68,7 @@ In the top panel, press `Ctrl+C` to terminate agentgateway.
 Review the following proxy configuration:
 
 ```shell
-bat 02-token-budget.yaml
+bat configs/token-budget.yaml
 ```
 
 The above configuration adds a policy to rate-limit requests.
@@ -85,7 +79,7 @@ The rate limiting is specified in terms of number of tokens used, tokens being t
 Restart agentgateway with the updated configuration file:
 
 ```shell
-agentgateway -f 02-token-budget.yaml
+agentgateway -f configs/token-budget.yaml
 ```
 
 Select the bottom panel, and try to run the agent a few times to trigger the rate limit:

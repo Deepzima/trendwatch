@@ -3,24 +3,18 @@
 In this lab, we update agentgateway's configuration to proxy MCP servers in addition to LLM models.
 By default, agentgateway uses port 3000 for proxying MCP servers and 4000 for LLM traffic.
 
-Configure a two-panel layout for the terminal:
-
-```shell
-zellij --layout ~/two-pane-layout.kdl
-```
-
 Review the following agentgateway configuration:
 
 ```shell
-bat 03-mcp-single.yaml
+bat configs/mcp-single.yaml
 ```
 
 In addition to the `llm` configuration, we now also have an `mcp` configuration with a single target:  the `trends_server` MCP server.
 
-the top panel, start agentgateway with the updated configuration file:
+From the top panel, start agentgateway with the updated configuration file:
 
 ```shell
-agentgateway -f ~/03-mcp-single.yaml
+agentgateway -f configs/mcp-single.yaml
 ```
 
 In the bottom panel, update the URL for the MCP server to target agentgateway on port 3000:
@@ -42,7 +36,7 @@ Ultimately you should see in the logs the `tools/call` to `gen_ai.tool.name=tren
 
 Having a proxy in front of LLM and MCP calls helps you audit, and build a picture of interactions with agentic services.
 
-Bring up the distributed traces view by clicking on the tab labeled "Jaeger Dashboard".
+Open the [Jaeger Dashboard](http://localhost:16686/) you started earlier.
 Click "Find Traces", listed should be a trace with 14 spans, representing a run of the `trendwatch` agent.
 Click on the trace, and examine the spans, which include:
 
@@ -58,7 +52,7 @@ In the top panel, press `Ctrl+C` to terminate agentgateway.
 Review the next configuration:
 
 ```shell
-bat 04-mcp-multiplex.yaml
+bat configs/mcp-multiplex.yaml
 ```
 
 Above, the main difference is the addition of two other MCP servers.
@@ -67,7 +61,7 @@ To the agent, agentgateway will look like a single MCP server that aggregates, o
 Restart agentgateway with the updated configuration file:
 
 ```shell
-agentgateway -f 04-mcp-multiplex.yaml
+agentgateway -f configs/mcp-multiplex.yaml
 ```
 
 In the bottom panel, run the agent once more:
@@ -76,7 +70,7 @@ In the bottom panel, run the agent once more:
 python3 agent/trendwatch.py "what is hot in agentic AI today?"
 ```
 
-Note how the number of tools discovered is now 10, whereas previously it was 3.
+Note how the number of tools discovered is now ten (10), whereas previously we had only three (3) tools.
 All the tools across the three MCP servers were aggregated into one.
 
 ## Filter the tool list
@@ -84,7 +78,7 @@ All the tools across the three MCP servers were aggregated into one.
 In the top panel, press `Ctrl+C` to terminate agentgateway, and review the next configuration:
 
 ```shell
-bat 05-tool-filtering.yaml
+bat configs/tool-filtering.yaml
 ```
 
 The important difference is the added `mcpAuthorization` policy with three rules specified as [CEL (Common Expression Language) expressions](https://agentgateway.dev/docs/standalone/latest/reference/cel/).
@@ -96,7 +90,7 @@ Confirm this.
 In the top panel, restart agentgateway with the updated configuration file:
 
 ```shell
-agentgateway -f 05-tool-filtering.yaml
+agentgateway -f configs/tool-filtering.yaml
 ```
 
 In the bottom panel, re-run the agent:
