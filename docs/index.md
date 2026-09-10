@@ -4,6 +4,15 @@ This workshop helps you explore some of the agentic capabilities of [agentgatewa
 
 The workshop is designed to be self-contained with a minimum of external dependencies.
 
+## Prerequisites
+
+To work through this workshop, please ensure that you have the following installed on your machine:
+
+- python3 (version 3.11 or above)
+- [jq](https://jqlang.org/)
+- docker
+- ollama (instructions for installation are below)
+
 ## Local model
 
 This workshop assumes a local inference model using the [Ollama](https://ollama.com/) project.
