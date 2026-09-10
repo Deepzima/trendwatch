@@ -24,13 +24,13 @@ cat configs/no-github-token.yaml
 
 Above, note how the mcp target using an `openapi` stanza, which references the OpenAPI specification.
 
-In the top panel, start agentgateway:
+In one terminal, start agentgateway:
 
 ```shell
 agentgateway -f configs/no-github-token.yaml
 ```
 
-In the bottom panel, run the agent with the query about the GitHub rate limit:
+In a second terminal, run the agent with the query about the GitHub rate limit:
 
 ```shell
 python3 agent/trendwatch.py "what is my GitHub rate limit?"
@@ -44,7 +44,7 @@ This is the unauthenticated rate limit.
 Agentgateway provides a mechanism to [configure a backend target with credentials](https://agentgateway.dev/docs/standalone/latest/documentation/configuration/security/backend-authn/key/).
 In this case, we wish to send a Personal Access Token to the GitHub API backend.
 
-In the top panel, press `Ctrl+C` to terminate agentgateway.
+In the first terminal, press `Ctrl+C` to terminate agentgateway.
 
 Review the agentgateway configuration:
 
@@ -75,7 +75,7 @@ Start the agentgateway with this configuration:
 agentgateway -f configs/credential-injection.yaml
 ```
 
-In the bottom panel, repeat the query, the question now is in the context of the credentials represented by the supplied key:
+In the second terminal, repeat the query, the question now is in the context of the credentials represented by the supplied key:
 
 ```shell
 python3 agent/trendwatch.py "what is my GitHub rate limit?"

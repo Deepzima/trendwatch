@@ -35,17 +35,13 @@ cat configs/llm-basic.yaml
 
 The configuration cites a single model, named "trend-pro", hiding the fact that "trend-pro" is backed by the qwen3 model.  Since this model runs locally with ollama, it does not require an apiKey.  In general, configuring the apiKey at the proxy has an advantage: the key is never exposed to end users, it is maintained by the platform team.
 
-Configure a two-panel layout so that you have two terminals running.
-
-Select the top panel, and start the proxy:
+In one terminal start the proxy:
 
 ```shell
 agentgateway -f configs/llm-basic.yaml
 ```
 
-Switch to the bottom panel (second terminal).
-
-Configure the `trendwatch` agent to point at the proxy when calling the LLM:
+In a second terminal, configure the `trendwatch` agent to point at the proxy when calling the LLM:
 
 ```shell
 export LLM_BASE_URL=http://localhost:4000/v1
@@ -63,7 +59,7 @@ In agentgateway's logs, you can see that it captures the requests to the LLM alo
 
 ## Configure token budgets
 
-In the top panel, press `Ctrl+C` to terminate agentgateway.
+In the first terminal, press `Ctrl+C` to terminate agentgateway.
 
 Review the following proxy configuration:
 
@@ -82,7 +78,7 @@ Restart agentgateway with the updated configuration file:
 agentgateway -f configs/token-budget.yaml
 ```
 
-Select the bottom panel, and try to run the agent a few times to trigger the rate limit:
+From the other terminal, try to run the agent a few times to trigger the rate limit:
 
 ```shell
 for i in {1..3}; do

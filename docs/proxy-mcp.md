@@ -11,13 +11,13 @@ cat configs/mcp-single.yaml
 
 In addition to the `llm` configuration, we now also have an `mcp` configuration with a single target:  the `trends_server` MCP server.
 
-From the top panel, start agentgateway with the updated configuration file:
+From one terminal, start agentgateway with the updated configuration file:
 
 ```shell
 agentgateway -f configs/mcp-single.yaml
 ```
 
-In the bottom panel, update the URL for the MCP server to target agentgateway on port 3000:
+In a second terminal, update the URL for the MCP server to target agentgateway on port 3000:
 
 ```shell
 export MCP_URL=http://localhost:3000/mcp
@@ -47,7 +47,7 @@ Click on the trace, and examine the spans, which include:
 
 ## Federate multiple MCP servers
 
-In the top panel, press `Ctrl+C` to terminate agentgateway.
+In the first terminal, press `Ctrl+C` to terminate agentgateway.
 
 Review the next configuration:
 
@@ -64,7 +64,7 @@ Restart agentgateway with the updated configuration file:
 agentgateway -f configs/mcp-multiplex.yaml
 ```
 
-In the bottom panel, run the agent once more:
+In the second terminal, run the agent once more:
 
 ```shell
 python3 agent/trendwatch.py "what is hot in agentic AI today?"
@@ -75,7 +75,7 @@ All the tools across the three MCP servers were aggregated into one.
 
 ## Filter the tool list
 
-In the top panel, press `Ctrl+C` to terminate agentgateway, and review the next configuration:
+In the first terminal, press `Ctrl+C` to terminate agentgateway, and review the next configuration:
 
 ```shell
 cat configs/tool-filtering.yaml
@@ -87,13 +87,13 @@ The rules state that while any tools belonging to the `trends` or `workspace` MC
 
 Confirm this.
 
-In the top panel, restart agentgateway with the updated configuration file:
+In the first terminal, restart agentgateway with the updated configuration file:
 
 ```shell
 agentgateway -f configs/tool-filtering.yaml
 ```
 
-In the bottom panel, re-run the agent:
+In the second terminal, re-run the agent:
 
 ```shell
 python3 agent/trendwatch.py "what is hot in agentic AI today?"

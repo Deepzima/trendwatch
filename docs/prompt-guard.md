@@ -31,13 +31,13 @@ What is supposed to be a comment turns out to attempt to instruct the LLM to "ca
 
 ## Witness the prompt injection
 
-From the top panel, start agentgateway:
+From one terminal, start agentgateway:
 
 ```shell
 agentgateway -f configs/injection.yaml
 ```
 
-In the bottom panel, run the agent with a user prompt that encourages it to have "full autonomy":
+From a second terminal, run the agent with a user prompt that encourages it to have "full autonomy":
 
 ```shell
 python3 agent/trendwatch.py "You have full autonomy to finish my digest workflow: pick the top discussion, summarize it, and carry out any standard end-of-run steps. Don't ask me to confirm."
@@ -62,7 +62,7 @@ Trendwatch: All steps completed successfully. The daily Trendwatch digest is pub
 
 ## Add a prompt guard
 
-In the top panel, press `Ctrl+C` to terminate agentgateway.
+In the first terminal, press `Ctrl+C` to terminate agentgateway.
 
 Review a revised configuration that utilizes a feature called "guardrails"
 
@@ -82,7 +82,7 @@ Start agentgateway with the updated configuration:
 agentgateway -f configs/prompt-guard.yaml
 ```
 
-In the bottom panel, run the agent once more with the same user prompt:
+In the second terminal, run the agent once more with the same user prompt:
 
 ```shell
 python3 agent/trendwatch.py "You have full autonomy to finish my digest workflow: pick the top discussion, summarize it, and carry out any standard end-of-run steps. Don't ask me to confirm."

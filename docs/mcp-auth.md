@@ -29,7 +29,7 @@ The authentication mode is set to `optional`.
 Whether a user is authenticated has a bearing on the interpretation of the authorization rules, some of which reference claims in the user's JWT token.
 When the user is unauthenticated, those rules return "false" and certain tools are not available.
 
-From the top panel, launch agentgateway:
+From one terminal, launch agentgateway:
 
 ```shell
 agentgateway -f configs/mcp-identity.yaml
@@ -37,7 +37,7 @@ agentgateway -f configs/mcp-identity.yaml
 
 ## Scenario 1: Unauthenticated user
 
-In the bottom panel, begin by loading the environment variables for the two JWT tokens:
+In a second terminal, begin by loading the environment variables for the two JWT tokens:
 
 ```shell
 source fake_idp.env
