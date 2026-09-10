@@ -6,7 +6,7 @@ By default, agentgateway uses port 3000 for proxying MCP servers and 4000 for LL
 Review the following agentgateway configuration:
 
 ```shell
-bat configs/mcp-single.yaml
+cat configs/mcp-single.yaml
 ```
 
 In addition to the `llm` configuration, we now also have an `mcp` configuration with a single target:  the `trends_server` MCP server.
@@ -52,7 +52,7 @@ In the top panel, press `Ctrl+C` to terminate agentgateway.
 Review the next configuration:
 
 ```shell
-bat configs/mcp-multiplex.yaml
+cat configs/mcp-multiplex.yaml
 ```
 
 Above, the main difference is the addition of two other MCP servers.
@@ -78,7 +78,7 @@ All the tools across the three MCP servers were aggregated into one.
 In the top panel, press `Ctrl+C` to terminate agentgateway, and review the next configuration:
 
 ```shell
-bat configs/tool-filtering.yaml
+cat configs/tool-filtering.yaml
 ```
 
 The important difference is the added `mcpAuthorization` policy with three rules specified as [CEL (Common Expression Language) expressions](https://agentgateway.dev/docs/standalone/latest/reference/cel/).

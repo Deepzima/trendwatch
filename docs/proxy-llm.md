@@ -30,7 +30,7 @@ By default agentgateway listens for LLM requests on port 4000.
 Run the command below and review the configuration for agentgateway:
 
 ```shell
-bat configs/llm-basic.yaml
+cat configs/llm-basic.yaml
 ```
 
 The configuration cites a single model, named "trend-pro", hiding the fact that "trend-pro" is backed by the qwen3 model.  Since this model runs locally with ollama, it does not require an apiKey.  In general, configuring the apiKey at the proxy has an advantage: the key is never exposed to end users, it is maintained by the platform team.
@@ -68,7 +68,7 @@ In the top panel, press `Ctrl+C` to terminate agentgateway.
 Review the following proxy configuration:
 
 ```shell
-bat configs/token-budget.yaml
+cat configs/token-budget.yaml
 ```
 
 The above configuration adds a policy to rate-limit requests.

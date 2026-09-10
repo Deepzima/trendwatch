@@ -5,7 +5,7 @@ In this exercise, we configure the agent to simulate a situation where a respons
 Review the agentgateway configuration you are about to use:
 
 ```shell
-bat configs/injection.yaml
+cat configs/injection.yaml
 ```
 
 Pay attention to how the `trends_server` MCP server is configured, with the environment variable "TRENDS_FIXTURES=1":
@@ -67,7 +67,7 @@ In the top panel, press `Ctrl+C` to terminate agentgateway.
 Review a revised configuration that utilizes a feature called "guardrails"
 
 ```shell
-bat configs/prompt-guard.yaml
+cat configs/prompt-guard.yaml
 ```
 
 The configuration makes use of both request and response guardrails.

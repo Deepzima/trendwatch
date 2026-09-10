@@ -21,7 +21,7 @@ The same process also writes the file `fake_idp.env` to load the JWT tokens as e
 Review the following agentgateway configuration:
 
 ```shell
-bat configs/mcp-identity.yaml
+cat configs/mcp-identity.yaml
 ```
 
 The configuration has both authentication and authorization sections.

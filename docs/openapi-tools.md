@@ -7,7 +7,7 @@ In this lab, you will experiment with yet another interesting feature of agentga
 Review the following, trimmed, OpenAPI specification for the GitHub API:
 
 ```shell
-bat configs/github-search.openapi.json
+cat configs/github-search.openapi.json
 ```
 
 The specification exposes three API calls:
@@ -19,7 +19,7 @@ The specification exposes three API calls:
 Next, review the agentgateway configuration:
 
 ```shell
-bat configs/no-github-token.yaml
+cat configs/no-github-token.yaml
 ```
 
 Above, note how the mcp target using an `openapi` stanza, which references the OpenAPI specification.
@@ -49,7 +49,7 @@ In the top panel, press `Ctrl+C` to terminate agentgateway.
 Review the agentgateway configuration:
 
 ```shell
-bat configs/credential-injection.yaml
+cat configs/credential-injection.yaml
 ```
 
 The main thing to note is the static key configured under `backendAuth`: the key is configured to the value of the environment variable GITHUB_TOKEN.
