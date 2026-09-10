@@ -86,8 +86,9 @@ pip install -r requirements.txt
 Run the distributed tracing project [Jaeger](https://www.jaegertracing.io/) in a docker container:
 
 ```shell
-docker run -d --name jaeger jaegertracing/all-in-one:latest \
-  -p 16686:16686 -p 4317:4317
+docker run -d --name jaeger \
+  -p 16686:16686 -p 4317:4317 \
+  jaegertracing/all-in-one:latest
 ```
 
 You will use Jaeger to inspect distributed traces illustrating the call flows between the agent, the LLM, and MCP servers.
