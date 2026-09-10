@@ -1,13 +1,13 @@
 [project]
-site_url = "https://eitansuez.github.io/trendwatch"
+site_url = "https://solo-io.github.io/trendwatch"
 site_name = "Agentgateway workshop"
 site_description = "Learn agentgateway with the sample Trendwatch agent"
 site_author = "Lin Sun & Eitan Suez"
 
 # copyright = "Copyright &copy; 2026 Your name"
 
-repo_url = "https://github.com/eitansuez/trendwatch"
-repo_name = "eitansuez/trendwatch"
+repo_url = "https://github.com/solo-io/trendwatch"
+repo_name = "solo-io/trendwatch"
 # edit_uri = "edit/main/docs/"
 
 nav = [
