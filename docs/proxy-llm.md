@@ -35,13 +35,19 @@ cat configs/llm-basic.yaml
 
 The configuration cites a single model, named "trend-pro", hiding the fact that "trend-pro" is backed by the qwen3 model.  Since this model runs locally with ollama, it does not require an apiKey.  In general, configuring the apiKey at the proxy has an advantage: the key is never exposed to end users, it is maintained by the platform team.
 
-In one terminal start the proxy:
+Start the proxy:
 
 ```shell
 agentgateway -f configs/llm-basic.yaml
 ```
 
-In a second terminal, configure the `trendwatch` agent to point at the proxy when calling the LLM:
+Open a second terminal, and activate the python virtual environment:
+
+```shell
+source .venv/bin/activate
+```
+
+In that second terminal, configure the `trendwatch` agent to point at the proxy when calling the LLM:
 
 ```shell
 export LLM_BASE_URL=http://localhost:4000/v1
