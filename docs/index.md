@@ -86,6 +86,16 @@ Activate the environment:
 source .venv/bin/activate
 ```
 
+!!! note  "Activating the virtual environment for different shells"
+
+    The python3 virtual environment provides different `activate` scripts for different types of shells.
+
+    If you happen to be running the [fish shell](https://fishshell.com/), substitute the above command with this instead:
+
+    ```shell
+    source .venv/bin/activate.fish
+    ```
+
 Install the project's dependencies:
 
 ```shell
