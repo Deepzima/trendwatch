@@ -63,6 +63,24 @@ python3 agent/trendwatch.py "what discussions are trending today?"
 
 In agentgateway's logs, you can see that it captures the requests to the LLM along with metadata such as the model that was called, token consumption, and more.  What agentgateway captures is configurable, and can even include the user prompt and the response.
 
+## Explore the agentgateway UI
+
+Agentgateway provides a rich user interface accessible by default at [http://localhost:15000/ui](http://localhost:15000/ui){ target=_blank }.
+
+In the UI's home page, note that the "LLM" section is Enabled.
+
+From the navigation panel, click on "Models", and note how the model named "trend-pro" is configured and maps to the `qwen3:8b` outgoing model.
+
+Click on "Logs", and note how the calls to the LLM on each term has been captured, along with latencies, requested and outgoing models, and both input and output token usage.
+
+!!! info "Prompt logging"
+
+    In the Logs page, you should see an informational callout stating that "Prompt logging is off."
+
+    Feel free to follow that suggestion:  click the link, check the box "Include prompts and completion in logs" and "Save Settings" to turn that on.
+
+    Subsequent LLM calls will also log both the prompt and the model's response.
+
 ## Configure token budgets
 
 In the first terminal, press `Ctrl+C` to terminate agentgateway.
