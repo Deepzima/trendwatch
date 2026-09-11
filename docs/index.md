@@ -66,10 +66,10 @@ cd trendwatch
 
 The code consists of an agent named "TrendWatch", and a set of example MCP servers, written in python.
 
-Run the following `tree` command to view the main project files:
+Inspect the contents of the `agent/` and `mcp-servers/` subdirectories, to take account of the main project files:
 
 ```shell
-tree . -I __pycache__ -I tests -I docs -I site
+ls -lF agent/ mcp-servers/
 ```
 
 ### Setup
