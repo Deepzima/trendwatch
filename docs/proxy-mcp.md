@@ -36,6 +36,8 @@ Ultimately you should see in the logs the `tools/call` to `gen_ai.tool.name=tren
 
 Having a proxy in front of LLM and MCP calls helps you audit, and build a picture of interactions with agentic services.
 
+## Observe distributed traces
+
 Open the [Jaeger Dashboard](http://localhost:16686/) you started earlier.
 Click "Find Traces", listed should be a trace with 14 spans, representing a run of the `trendwatch` agent.
 Click on the trace, and examine the spans, which include:
