@@ -38,7 +38,7 @@ Having a proxy in front of LLM and MCP calls helps you audit, and build a pictur
 
 ## Observe distributed traces
 
-Open the [Jaeger Dashboard](http://localhost:16686/) you started earlier.
+Open the [Jaeger Dashboard](http://localhost:16686/){ target=_blank } you started earlier.
 Click "Find Traces", listed should be a trace with 14 spans, representing a run of the `trendwatch` agent.
 Click on the trace, and examine the spans, which include:
 
@@ -83,7 +83,7 @@ In the first terminal, press `Ctrl+C` to terminate agentgateway, and review the 
 cat configs/tool-filtering.yaml
 ```
 
-The important difference is the added `mcpAuthorization` policy with three rules specified as [CEL (Common Expression Language) expressions](https://agentgateway.dev/docs/standalone/latest/reference/cel/).
+The important difference is the added `mcpAuthorization` policy with three rules specified as [CEL (Common Expression Language) expressions](https://agentgateway.dev/docs/standalone/latest/reference/cel/){ target=_blank }.
 
 The rules state that while any tools belonging to the `trends` or `workspace` MCP targets are authorized, only the `get_public_feed` tool from the `publish` target is authorized.
 

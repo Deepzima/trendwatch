@@ -119,7 +119,7 @@ Trendwatch: 1. **Ask HN: how do you keep agent token costs under control?** (cos
 
 ## Summary
 
-In this example, you walked through an example utilization of the [guardrails](https://agentgateway.dev/docs/kubernetes/latest/documentation/llm/guardrails/) feature in agentgateway.
+In this example, you walked through an example utilization of the [guardrails](https://agentgateway.dev/docs/kubernetes/latest/documentation/llm/guardrails/){ target=_blank } feature in agentgateway.
 
 The feature itself is more comprehensive than simple masks with regular expressions.
 Agentgateway provides builtin patterns for telephone numbers, email addresses, social security numbers, and credit card numbers.

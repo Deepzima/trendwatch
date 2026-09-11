@@ -1,6 +1,6 @@
 # Expose OpenAPI as MCP tools
 
-In this lab, you will experiment with yet another interesting feature of agentgateway:  its ability to [expose OpenAPI endpoints as MCP tools](https://agentgateway.dev/docs/standalone/latest/integrations/mcp/servers/openapi/).
+In this lab, you will experiment with yet another interesting feature of agentgateway:  its ability to [expose OpenAPI endpoints as MCP tools](https://agentgateway.dev/docs/standalone/latest/integrations/mcp/servers/openapi/){ target=_blank }.
 
 ## Unauthenticated tool calls
 
@@ -41,7 +41,7 @@ This is the unauthenticated rate limit.
 
 ## Authenticated tool call
 
-Agentgateway provides a mechanism to [configure a backend target with credentials](https://agentgateway.dev/docs/standalone/latest/documentation/configuration/security/backend-authn/key/).
+Agentgateway provides a mechanism to [configure a backend target with credentials](https://agentgateway.dev/docs/standalone/latest/documentation/configuration/security/backend-authn/key/){ target=_blank }.
 In this case, we wish to send a Personal Access Token to the GitHub API backend.
 
 In the first terminal, press `Ctrl+C` to terminate agentgateway.
@@ -56,7 +56,7 @@ The main thing to note is the static key configured under `backendAuth`: the key
 
 ### Create a GitHub token
 
-Visit GitHub [Personal access tokens](https://github.com/settings/personal-access-tokens) and generate a new token for yourself:
+Visit GitHub [Personal access tokens](https://github.com/settings/personal-access-tokens){ target=_blank } and generate a new token for yourself:
 
 - Give it a name
 - For "Repository access", just select "Public repositories"
@@ -86,4 +86,4 @@ The reply should indicate that the rate limit is more generous for an authentica
 ## Summary
 
 In this lab, you've seen how easily agentgateway exposes an MCP server from an OpenAPI specification.
-It supports a variety of backend authentication mechanisms; read more about it [here](https://agentgateway.dev/docs/standalone/latest/documentation/configuration/security/backend-authn/).
+It supports a variety of backend authentication mechanisms; read more about it [here](https://agentgateway.dev/docs/standalone/latest/documentation/configuration/security/backend-authn/){ target=_blank }.

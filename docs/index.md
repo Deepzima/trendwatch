@@ -1,6 +1,6 @@
 # Introduction
 
-This workshop helps you explore some of the agentic capabilities of [agentgateway](https://agentgateway.dev/).
+This workshop helps you explore some of the agentic capabilities of [agentgateway](https://agentgateway.dev/){ target=_blank }.
 
 The workshop is designed to be self-contained with a minimum of external dependencies.
 
@@ -9,23 +9,24 @@ The workshop is designed to be self-contained with a minimum of external depende
 To work through this workshop, please ensure that you have the following installed on your machine:
 
 - python3 (version 3.11 or above)
-- [jq](https://jqlang.org/)
+- [jq](https://jqlang.org/){ target=_blank }
 - docker
 - ollama (instructions for installation are below)
 
 ## Local model
 
-This workshop assumes a local inference model using the [Ollama](https://ollama.com/) project.
+This workshop assumes a local inference model using the [Ollama](https://ollama.com/){ target=_blank }
+ project.
 
-If you don't already have Ollama running, on a mac you can install it with [homebrew](https://brew.sh/):
+If you don't already have Ollama running, on a mac you can install it with [homebrew](https://brew.sh/){ target=_blank }:
 
 ```shell
 brew install ollama
 ```
 
-For other platforms, consult the [Ollama docs](https://docs.ollama.com/linux) for the install instructions.
+For other platforms, consult the [Ollama docs](https://docs.ollama.com/linux){ target=_blank } for the install instructions.
 
-Pull the [qwen3](https://ollama.com/library/qwen3) model.
+Pull the [qwen3](https://ollama.com/library/qwen3){ target=_blank } model.
 
 ```shell
 ollama pull qwen3:8b
@@ -90,7 +91,7 @@ source .venv/bin/activate
 
     The python3 virtual environment provides different `activate` scripts for different types of shells.
 
-    If you happen to be running the [fish shell](https://fishshell.com/), substitute the above command with this instead:
+    If you happen to be running the [fish shell](https://fishshell.com/){ target=_blank }, substitute the above command with this instead:
 
     ```shell
     source .venv/bin/activate.fish
@@ -102,7 +103,7 @@ Install the project's dependencies:
 pip install -r requirements.txt
 ```
 
-Run the distributed tracing project [Jaeger](https://www.jaegertracing.io/) in a docker container:
+Run the distributed tracing project [Jaeger](https://www.jaegertracing.io/){ target=_blank } in a docker container:
 
 ```shell
 docker run -d --name jaeger \
