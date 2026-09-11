@@ -16,3 +16,8 @@ fake_idp.env
 
 # zensical
 site/
+
+# agentgateway
+data.db
+data.db-shm
+data.db-wal
