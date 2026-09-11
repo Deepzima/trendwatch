@@ -55,7 +55,7 @@ It leverages a set of MCP servers to read trending discussions, build and save a
 Clone the GitHub repository for the project:
 
 ```shell
-git clone https://github.com/eitansuez/trendwatch.git
+git clone https://github.com/solo-io/trendwatch.git
 ```
 
 Navigate into the directory:
