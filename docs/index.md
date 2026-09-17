@@ -54,6 +54,11 @@ To work through this workshop, please ensure that you have the following install
 
     If you'd rather not use a local model, here are some instructions for Google Gemini (no credit card is required for the free tier).
 
+    !!! warning "Free-tier quota"
+
+        The free tier is often not enough to complete every lab in this workshop.
+        If you have your own Gemini API key, export that as `GEMINI_API_KEY` and skip minting a free key below.
+
     Mint a free key:
 
     - Open [Google AI Studio](https://aistudio.google.com/apikey){ target=_blank } and sign in with a personal Google account.
