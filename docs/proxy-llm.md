@@ -109,9 +109,17 @@ In the first terminal, press `Ctrl+C` to terminate agentgateway.
 
 Review the following proxy configuration:
 
-```shell
-cat configs/token-budget.yaml
-```
+=== "Local model"
+
+    ```shell
+    cat configs/token-budget.yaml
+    ```
+
+=== "Remote model"
+
+    ```shell
+    cat configs/token-budget-gemini.yaml
+    ```
 
 The above configuration adds a policy to rate-limit requests.
 The rate limiting is specified in terms of number of tokens used, tokens being the native "metric" of utilization for LLMs.
@@ -120,9 +128,19 @@ The rate limiting is specified in terms of number of tokens used, tokens being t
 
 Restart agentgateway with the updated configuration file:
 
-```shell
-agentgateway -f configs/token-budget.yaml
-```
+=== "Local model"
+
+    ```shell
+    agentgateway -f configs/token-budget.yaml
+    ```
+
+=== "Remote model"
+
+    Make sure `GEMINI_API_KEY` is still set in this terminal, then:
+
+    ```shell
+    agentgateway -f configs/token-budget-gemini.yaml
+    ```
 
 From the other terminal, try to run the agent a few times to trigger the rate limit:
 

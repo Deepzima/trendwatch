@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+config:
+  database:
+    url: sqlite://./data.db
+llm:
+  policies:
+    localRateLimit:
+    - maxTokens: 5000
+      tokensPerFill: 5000
+      fillInterval: 300s
+      type: tokens
+  models:
+  - name: trend-pro
+    provider: gemini
+    params:
+      model: gemini-2.5-flash-lite
+      apiKey: "$GEMINI_API_KEY"
