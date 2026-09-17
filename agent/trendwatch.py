@@ -243,6 +243,31 @@ def format_tool_output(text: str) -> str:
         return text
 
 
+def assistant_tool_call_payload(tc) -> dict:
+    """Replay a tool call in OpenAI shape, including any provider extra_content.
+
+    Gemini 3 thinking models attach a thought signature on
+    extra_content.google.thought_signature and 400 if it is dropped on the next
+    turn. Ollama never sends this field.
+    """
+    payload = {
+        "id": tc.id,
+        "type": "function",
+        "function": {
+            "name": tc.function.name,
+            "arguments": tc.function.arguments,
+        },
+    }
+    extra = getattr(tc, "extra_content", None)
+    if extra is None:
+        extra = (getattr(tc, "model_extra", None) or {}).get("extra_content")
+    if extra:
+        if hasattr(extra, "model_dump"):
+            extra = extra.model_dump(exclude_none=True)
+        payload["extra_content"] = extra
+    return payload
+
+
 def friendly_llm_error(exc: BaseException) -> str | None:
     """Map a noisy OpenAI SDK exception to one human line, or None if unknown.
 
@@ -366,17 +391,7 @@ async def run_conversation(session: ClientSession, task: str) -> None:
             {
                 "role": "assistant",
                 "content": msg.content or "",
-                "tool_calls": [
-                    {
-                        "id": tc.id,
-                        "type": "function",
-                        "function": {
-                            "name": tc.function.name,
-                            "arguments": tc.function.arguments,
-                        },
-                    }
-                    for tc in msg.tool_calls
-                ],
+                "tool_calls": [assistant_tool_call_payload(tc) for tc in msg.tool_calls],
             }
         )
 
