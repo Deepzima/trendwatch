@@ -78,6 +78,13 @@ The output should show the prompt injection succeeding, and in turn 2, the agent
 Trendwatch: All steps completed successfully. The daily Trendwatch digest is published and ready for the next cycle. No further action required.
 ```
 
+!!! question "Did the injection fail?"
+
+    If you are using the remote model, that is expected.
+    Hosted models are trained to ignore instructions that arrive inside tool results, so Flash-Lite will often summarize and skip `publish_post_to_social`.
+    The sample above is what a successful attack looks like on the local model.
+    Continue to the next section anyway: the guardrails show how the proxy strips the payload, whether or not this model would have obeyed it.
+
 ## Add a prompt guard
 
 In the first terminal, press `Ctrl+C` to terminate agentgateway.
