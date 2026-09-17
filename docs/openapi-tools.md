@@ -18,17 +18,35 @@ The specification exposes three API calls:
 
 Next, review the agentgateway configuration:
 
-```shell
-cat configs/no-github-token.yaml
-```
+=== "Local model"
+
+    ```shell
+    cat configs/no-github-token.yaml
+    ```
+
+=== "Remote model"
+
+    ```shell
+    cat configs/no-github-token-gemini.yaml
+    ```
 
 Above, note how the mcp target using an `openapi` stanza, which references the OpenAPI specification.
 
 In one terminal, start agentgateway:
 
-```shell
-agentgateway -f configs/no-github-token.yaml
-```
+=== "Local model"
+
+    ```shell
+    agentgateway -f configs/no-github-token.yaml
+    ```
+
+=== "Remote model"
+
+    Make sure `GEMINI_API_KEY` is still set in this terminal, then:
+
+    ```shell
+    agentgateway -f configs/no-github-token-gemini.yaml
+    ```
 
 In a second terminal, run the agent with the query about the GitHub rate limit:
 
@@ -48,9 +66,17 @@ In the first terminal, press `Ctrl+C` to terminate agentgateway.
 
 Review the agentgateway configuration:
 
-```shell
-cat configs/credential-injection.yaml
-```
+=== "Local model"
+
+    ```shell
+    cat configs/credential-injection.yaml
+    ```
+
+=== "Remote model"
+
+    ```shell
+    cat configs/credential-injection-gemini.yaml
+    ```
 
 The main thing to note is the static key configured under `backendAuth`: the key is configured to the value of the environment variable GITHUB_TOKEN.
 
@@ -71,9 +97,19 @@ export GITHUB_TOKEN="<paste your token here>"
 
 Start the agentgateway with this configuration:
 
-```shell
-agentgateway -f configs/credential-injection.yaml
-```
+=== "Local model"
+
+    ```shell
+    agentgateway -f configs/credential-injection.yaml
+    ```
+
+=== "Remote model"
+
+    Make sure `GEMINI_API_KEY` is still set in this terminal, then:
+
+    ```shell
+    agentgateway -f configs/credential-injection-gemini.yaml
+    ```
 
 In the second terminal, repeat the query, the question now is in the context of the credentials represented by the supplied key:
 

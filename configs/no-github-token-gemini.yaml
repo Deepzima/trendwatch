@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+config:
+  database:
+    url: sqlite://./data.db
+llm:
+  models:
+  - name: trend-pro
+    provider: gemini
+    params:
+      model: gemini-3.5-flash-lite
+      apiKey: "$GEMINI_API_KEY"
+mcp:
+  targets:
+  - name: github
+    openapi:
+      host: https://api.github.com
+      schema:
+        file: configs/github-search.openapi.json
