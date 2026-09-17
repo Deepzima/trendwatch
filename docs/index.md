@@ -150,21 +150,44 @@ The TrendWatch agent is configured to receive some of that information from envi
 - LLM_MODEL - the name of the model to target.
 - MCP_URL - the URL for the MCP server whose tools the agent can call.
 
-For example, configure the three environment variables as follows:
+Let us walk through an example.
 
-```shell
-export LLM_BASE_URL="http://localhost:11434/v1"
-export LLM_MODEL="qwen3:8b"
-export MCP_URL="stdio:./mcp-servers/trends_server.py"
-```
+=== "Local model"
 
-Above, we configure the agent to call `ollama`, to use the preconfigured `qwen` model, and to use the `trend_server` MCP server over the stdio transport (runs as a child process).
+    Configure the three environment variables as follows:
 
-Try it out by running:
+    ```shell
+    export LLM_BASE_URL="http://localhost:11434/v1"
+    export LLM_MODEL="qwen3:8b"
+    export MCP_URL="stdio:./mcp-servers/trends_server.py"
+    ```
 
-```shell
-python3 agent/trendwatch.py "what discussions are trending today?"
-```
+    Above, we configure the agent to call `ollama`, to use the preconfigured `qwen` model, and to use the `trend_server` MCP server over the stdio transport (runs as a child process).
+
+    Try it out by running:
+
+    ```shell
+    python3 agent/trendwatch.py "what discussions are trending today?"
+    ```
+
+=== "Remote model"
+
+    Configure the environment variables as follows:
+
+    ```shell
+    export LLM_BASE_URL="https://generativelanguage.googleapis.com/v1beta/openai/"
+    export LLM_MODEL="gemini-2.5-flash-lite"
+    export LLM_API_KEY="$GEMINI_API_KEY"
+    export MCP_URL="stdio:./mcp-servers/trends_server.py"
+    ```
+
+    Above, we configure the agent to call Gemini's [OpenAI-compatible](https://ai.google.dev/gemini-api/docs/openai){ target=_blank } endpoint, to use the Flash-Lite model, and to use the `trends_server` MCP server over the stdio transport (runs as a child process). `LLM_API_KEY` is the Gemini key from the previous step.
+
+    Try it out by running:
+
+    ```shell
+    python3 agent/trendwatch.py "what discussions are trending today?"
+    ```
 
 The agent outputs some logging information such as:
 
