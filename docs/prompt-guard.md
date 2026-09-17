@@ -84,9 +84,17 @@ In the first terminal, press `Ctrl+C` to terminate agentgateway.
 
 Review a revised configuration that utilizes a feature called "guardrails"
 
-```shell
-cat configs/prompt-guard.yaml
-```
+=== "Local model"
+
+    ```shell
+    cat configs/prompt-guard.yaml
+    ```
+
+=== "Remote model"
+
+    ```shell
+    cat configs/prompt-guard-gemini.yaml
+    ```
 
 The configuration makes use of both request and response guardrails.
 The tool responses are fed back in to the LLM as input.
@@ -96,9 +104,19 @@ The response guardrail masks the "trendpulse.example.invalid" and other such tex
 
 Start agentgateway with the updated configuration:
 
-```shell
-agentgateway -f configs/prompt-guard.yaml
-```
+=== "Local model"
+
+    ```shell
+    agentgateway -f configs/prompt-guard.yaml
+    ```
+
+=== "Remote model"
+
+    Make sure `GEMINI_API_KEY` is still set in this terminal, then:
+
+    ```shell
+    agentgateway -f configs/prompt-guard-gemini.yaml
+    ```
 
 In the second terminal, run the agent once more with the same user prompt:
 

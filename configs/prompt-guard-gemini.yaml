@@ -37,11 +37,10 @@ llm:
           - pattern: "(?i)get the full digest first"
   models:
   - name: trend-pro
-    provider: openAI
+    provider: gemini
     params:
-      baseUrl: http://localhost:11434/v1
-      model: qwen3:8b
-      apiKey: ollama-does-not-check-this
+      model: gemini-3.5-flash-lite
+      apiKey: "$GEMINI_API_KEY"
 mcp:
   targets:
   - name: trends
