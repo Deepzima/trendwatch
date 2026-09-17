@@ -29,17 +29,39 @@ By default agentgateway listens for LLM requests on port 4000.
 
 Run the command below and review the configuration for agentgateway:
 
-```shell
-cat configs/llm-basic.yaml
-```
+=== "Local model"
 
-The configuration cites a single model, named "trend-pro", hiding the fact that "trend-pro" is backed by the qwen3 model.  Since this model runs locally with ollama, it does not require an apiKey.  In general, configuring the apiKey at the proxy has an advantage: the key is never exposed to end users, it is maintained by the platform team.
+    ```shell
+    cat configs/llm-basic.yaml
+    ```
+
+    The configuration cites a single model, named "trend-pro", hiding the fact that "trend-pro" is backed by the qwen3 model.  Since this model runs locally with ollama, it does not require an apiKey.
+
+=== "Remote model"
+
+    ```shell
+    cat configs/llm-basic-gemini.yaml
+    ```
+
+    The configuration cites a single model, named "trend-pro", hiding the fact that "trend-pro" is backed by Gemini Flash-Lite.  The proxy authenticates to Gemini with `GEMINI_API_KEY`, so the agent never sees the real key.
+
+In general, configuring the apiKey at the proxy has an advantage: the key is never exposed to end users, it is maintained by the platform team.
 
 Start the proxy:
 
-```shell
-agentgateway -f configs/llm-basic.yaml
-```
+=== "Local model"
+
+    ```shell
+    agentgateway -f configs/llm-basic.yaml
+    ```
+
+=== "Remote model"
+
+    Make sure `GEMINI_API_KEY` is still set in this terminal, then:
+
+    ```shell
+    agentgateway -f configs/llm-basic-gemini.yaml
+    ```
 
 Open a second terminal, and activate the python virtual environment:
 
