@@ -5,17 +5,35 @@ By default, agentgateway uses port 3000 for proxying MCP servers and 4000 for LL
 
 Review the following agentgateway configuration:
 
-```shell
-cat configs/mcp-single.yaml
-```
+=== "Local model"
+
+    ```shell
+    cat configs/mcp-single.yaml
+    ```
+
+=== "Remote model"
+
+    ```shell
+    cat configs/mcp-single-gemini.yaml
+    ```
 
 In addition to the `llm` configuration, we now also have an `mcp` configuration with a single target:  the `trends_server` MCP server.
 
 From one terminal, start agentgateway with the updated configuration file:
 
-```shell
-agentgateway -f configs/mcp-single.yaml
-```
+=== "Local model"
+
+    ```shell
+    agentgateway -f configs/mcp-single.yaml
+    ```
+
+=== "Remote model"
+
+    Make sure `GEMINI_API_KEY` is still set in this terminal, then:
+
+    ```shell
+    agentgateway -f configs/mcp-single-gemini.yaml
+    ```
 
 In a second terminal, update the URL for the MCP server to target agentgateway on port 3000:
 
@@ -53,18 +71,36 @@ In the first terminal, press `Ctrl+C` to terminate agentgateway.
 
 Review the next configuration:
 
-```shell
-cat configs/mcp-multiplex.yaml
-```
+=== "Local model"
+
+    ```shell
+    cat configs/mcp-multiplex.yaml
+    ```
+
+=== "Remote model"
+
+    ```shell
+    cat configs/mcp-multiplex-gemini.yaml
+    ```
 
 Above, the main difference is the addition of two other MCP servers.
 To the agent, agentgateway will look like a single MCP server that aggregates, or multiplexes all three backend MCP servers.
 
 Restart agentgateway with the updated configuration file:
 
-```shell
-agentgateway -f configs/mcp-multiplex.yaml
-```
+=== "Local model"
+
+    ```shell
+    agentgateway -f configs/mcp-multiplex.yaml
+    ```
+
+=== "Remote model"
+
+    Make sure `GEMINI_API_KEY` is still set in this terminal, then:
+
+    ```shell
+    agentgateway -f configs/mcp-multiplex-gemini.yaml
+    ```
 
 In the second terminal, run the agent once more:
 
@@ -79,9 +115,17 @@ All the tools across the three MCP servers were aggregated into one.
 
 In the first terminal, press `Ctrl+C` to terminate agentgateway, and review the next configuration:
 
-```shell
-cat configs/tool-filtering.yaml
-```
+=== "Local model"
+
+    ```shell
+    cat configs/tool-filtering.yaml
+    ```
+
+=== "Remote model"
+
+    ```shell
+    cat configs/tool-filtering-gemini.yaml
+    ```
 
 The important difference is the added `mcpAuthorization` policy with three rules specified as [CEL (Common Expression Language) expressions](https://agentgateway.dev/docs/standalone/latest/reference/cel/){ target=_blank }.
 
@@ -91,9 +135,19 @@ Confirm this.
 
 In the first terminal, restart agentgateway with the updated configuration file:
 
-```shell
-agentgateway -f configs/tool-filtering.yaml
-```
+=== "Local model"
+
+    ```shell
+    agentgateway -f configs/tool-filtering.yaml
+    ```
+
+=== "Remote model"
+
+    Make sure `GEMINI_API_KEY` is still set in this terminal, then:
+
+    ```shell
+    agentgateway -f configs/tool-filtering-gemini.yaml
+    ```
 
 In the second terminal, re-run the agent:
 

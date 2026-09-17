@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+config:
+  database:
+    url: sqlite://./data.db
+frontendPolicies:
+  tracing:
+    host: localhost:4317
+    randomSampling: true
+llm:
+  models:
+  - name: trend-pro
+    provider: gemini
+    params:
+      model: gemini-2.5-flash-lite
+      apiKey: "$GEMINI_API_KEY"
+mcp:
+  policies:
+    mcpAuthorization:
+      rules:
+      - mcp.tool.target == "trends"
+      - mcp.tool.target == "workspace"
+      - mcp.tool.target == "publish" && mcp.tool.name == "get_public_feed"
+  targets:
+  - name: trends
+    stdio:
+      cmd: .venv/bin/python3
+      args:
+      - ./mcp-servers/trends_server.py
+  - name: workspace
+    stdio:
+      cmd: .venv/bin/python3
+      args:
+      - ./mcp-servers/workspace_server.py
+  - name: publish
+    stdio:
+      cmd: .venv/bin/python3
+      args:
+      - ./mcp-servers/publish_server.py
