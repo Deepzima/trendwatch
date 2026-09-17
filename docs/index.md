@@ -73,7 +73,7 @@ To work through this workshop, please ensure that you have the following install
     curl -s https://generativelanguage.googleapis.com/v1beta/openai/chat/completions \
       -H "Authorization: Bearer $GEMINI_API_KEY" \
       -H "Content-Type: application/json" \
-      -d '{"model":"gemini-2.5-flash-lite","messages":[{"role":"user","content":"say hi"}]}' | jq
+      -d '{"model":"gemini-3.5-flash-lite","messages":[{"role":"user","content":"say hi"}]}' | jq
     ```
 
 ## The agentic scenario: TrendWatch
@@ -176,7 +176,7 @@ Let us walk through an example.
 
     ```shell
     export LLM_BASE_URL="https://generativelanguage.googleapis.com/v1beta/openai/"
-    export LLM_MODEL="gemini-2.5-flash-lite"
+    export LLM_MODEL="gemini-3.5-flash-lite"
     export LLM_API_KEY="$GEMINI_API_KEY"
     export MCP_URL="stdio:./mcp-servers/trends_server.py"
     ```
