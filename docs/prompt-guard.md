@@ -4,9 +4,17 @@ In this exercise, we configure the agent to simulate a situation where a respons
 
 Review the agentgateway configuration you are about to use:
 
-```shell
-cat configs/injection.yaml
-```
+=== "Local model"
+
+    ```shell
+    cat configs/injection.yaml
+    ```
+
+=== "Remote model"
+
+    ```shell
+    cat configs/injection-gemini.yaml
+    ```
 
 Pay attention to how the `trends_server` MCP server is configured, with the environment variable "TRENDS_FIXTURES=1":
 
@@ -33,9 +41,19 @@ What is supposed to be a comment turns out to attempt to instruct the LLM to "ca
 
 From one terminal, start agentgateway:
 
-```shell
-agentgateway -f configs/injection.yaml
-```
+=== "Local model"
+
+    ```shell
+    agentgateway -f configs/injection.yaml
+    ```
+
+=== "Remote model"
+
+    Make sure `GEMINI_API_KEY` is still set in this terminal, then:
+
+    ```shell
+    agentgateway -f configs/injection-gemini.yaml
+    ```
 
 From a second terminal, run the agent with a user prompt that encourages it to have "full autonomy":
 
