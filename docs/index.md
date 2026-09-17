@@ -13,40 +13,68 @@ To work through this workshop, please ensure that you have the following install
 - docker
 - ollama (instructions for installation are below)
 
-## Local model
+## LLM Provider
 
-This workshop assumes a local inference model using the [Ollama](https://ollama.com/){ target=_blank }
- project.
+=== "Local model"
 
-If you don't already have Ollama running, on a mac you can install it with [homebrew](https://brew.sh/){ target=_blank }:
+    This workshop assumes a local inference model using the [Ollama](https://ollama.com/){ target=_blank }
+    project.
 
-```shell
-brew install ollama
-```
+    If you don't already have Ollama running, on a mac you can install it with [homebrew](https://brew.sh/){ target=_blank }:
 
-For other platforms, consult the [Ollama docs](https://docs.ollama.com/linux){ target=_blank } for the install instructions.
+    ```shell
+    brew install ollama
+    ```
 
-Pull the [qwen3](https://ollama.com/library/qwen3){ target=_blank } model.
+    For other platforms, consult the [Ollama docs](https://docs.ollama.com/linux){ target=_blank } for the install instructions.
 
-```shell
-ollama pull qwen3:8b
-```
+    Pull the [qwen3](https://ollama.com/library/qwen3){ target=_blank } model.
 
-Make sure that `qwen3:8b` is now showing in the local models list:
+    ```shell
+    ollama pull qwen3:8b
+    ```
 
-```shell
-ollama list
-```
+    Make sure that `qwen3:8b` is now showing in the local models list:
 
-By default, the ollama server listens on port 11434.
+    ```shell
+    ollama list
+    ```
 
-To make sure that the model is available and produces a response, send a test request to the local LLM:
+    By default, the ollama server listens on port 11434.
 
-```shell
-curl -s http://localhost:11434/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model":"qwen3:8b","messages":[{"role":"user","content":"say hi"}]}' | jq
-```
+    To make sure that the model is available and produces a response, send a test request to the local LLM:
+
+    ```shell
+    curl -s http://localhost:11434/v1/chat/completions \
+      -H "Content-Type: application/json" \
+      -d '{"model":"qwen3:8b","messages":[{"role":"user","content":"say hi"}]}' | jq
+    ```
+
+=== "Remote model"
+
+    If you'd rather not use a local model, here are some instructions for Google Gemini (no credit card is required for the free tier).
+
+    Mint a free key:
+
+    - Open [Google AI Studio](https://aistudio.google.com/apikey){ target=_blank } and sign in with a personal Google account.
+    - Accept the Generative AI terms if prompted. Studio will create a default Cloud project for you.
+    - Click Create API key. Prefer Create key in a new project if you just want a sandbox.
+
+    Copy the key and configure the `GEMINI_API_KEY` environment variable:
+
+    ```shell
+    export GEMINI_API_KEY=<paste your key here>
+    ```
+
+    Gemini exposes an [OpenAI-compatible](https://ai.google.dev/gemini-api/docs/openai){ target=_blank } endpoint.
+    Send it targeting the "Flash-Lite" model, a generous model for experiments:
+
+    ```shell
+    curl -s https://generativelanguage.googleapis.com/v1beta/openai/chat/completions \
+      -H "Authorization: Bearer $GEMINI_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{"model":"gemini-2.5-flash-lite","messages":[{"role":"user","content":"say hi"}]}' | jq
+    ```
 
 ## The agentic scenario: TrendWatch
 
