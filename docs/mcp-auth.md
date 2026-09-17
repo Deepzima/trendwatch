@@ -20,9 +20,17 @@ The same process also writes the file `fake_idp.env` to load the JWT tokens as e
 
 Review the following agentgateway configuration:
 
-```shell
-cat configs/mcp-identity.yaml
-```
+=== "Local model"
+
+    ```shell
+    cat configs/mcp-identity.yaml
+    ```
+
+=== "Remote model"
+
+    ```shell
+    cat configs/mcp-identity-gemini.yaml
+    ```
 
 The configuration has both authentication and authorization sections.
 The authentication mode is set to `optional`.
@@ -31,9 +39,19 @@ When the user is unauthenticated, those rules return "false" and certain tools a
 
 From one terminal, launch agentgateway:
 
-```shell
-agentgateway -f configs/mcp-identity.yaml
-```
+=== "Local model"
+
+    ```shell
+    agentgateway -f configs/mcp-identity.yaml
+    ```
+
+=== "Remote model"
+
+    Make sure `GEMINI_API_KEY` is still set in this terminal, then:
+
+    ```shell
+    agentgateway -f configs/mcp-identity-gemini.yaml
+    ```
 
 ## Scenario 1: Unauthenticated user
 
