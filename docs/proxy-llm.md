@@ -77,6 +77,10 @@ export LLM_MODEL=trend-pro
 export MCP_URL=stdio:./mcp-servers/trends_server.py
 ```
 
+These three values are the same whether you chose Ollama or Gemini.
+The agent still speaks the OpenAI API; only the base URL and model name changed.
+Agentgateway maps `trend-pro` onto the real provider.
+
 Finally, try running the agent once more:
 
 ```shell
