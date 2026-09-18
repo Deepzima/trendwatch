@@ -1,0 +1,7 @@
+# Risorse di contorno al chart agentgateway-standalone (release "agentgateway" in trendwatch).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: trendwatch
+resources:
+- nodeport.yaml
+- pvc.yaml

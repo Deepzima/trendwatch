@@ -1,0 +1,14 @@
+# Porte del Mac (kind extraPortMappings) -> agentgateway: le stesse del compose e delle docs.
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentgateway
+spec:
+  type: NodePort
+  selector: # selectorLabels del chart per la release "agentgateway"
+    app.kubernetes.io/name: agentgateway-standalone
+    app.kubernetes.io/instance: agentgateway
+  ports:
+  - {name: mcp, port: 3000, targetPort: 3000, nodePort: 30300}
+  - {name: llm, port: 4000, targetPort: 4000, nodePort: 30400}
+  - {name: ui, port: 15000, targetPort: 15000, nodePort: 31500}

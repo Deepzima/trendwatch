@@ -24,3 +24,9 @@ data.db-wal
 
 # mise: log/pid di ollama serve
 .run/
+
+# variante Kubernetes: kubeconfig di kind e stato di furyctl
+k8s/.kubeconfig
+k8s/.furyctl/
+k8s/.furyctl-apply.log
+zitadel.env

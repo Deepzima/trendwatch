@@ -1,0 +1,233 @@
+# Ogni server: immagine pubblica uv + `uv run --with mcp` (dipendenza installata all'avvio),
+# Streamable HTTP su :8000/mcp tramite serve_http.py. agentgateway li usa come target `mcp.host`.
+# trends-fixtures = trends con TRENDS_FIXTURES=1 (lab prompt-guard/injection), trends = Hacker News live.
+# I 4 Deployment differiscono solo per nome, MCP_MODULE e TRENDS_FIXTURES.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trends
+spec:
+  selector:
+    matchLabels: {app: trends}
+  template:
+    metadata:
+      labels: {app: trends}
+    spec:
+      containers:
+      - name: mcp
+        image: ghcr.io/astral-sh/uv:0.12.16-python3.14-trixie-slim
+        command: [uv, run, --no-project, --with, "mcp==2.2.0", python, /app/serve_http.py]
+        env:
+        - {name: MCP_MODULE, value: trends_server}
+        - {name: UV_CACHE_DIR, value: /tmp/uv-cache}
+        workingDir: /work # ./out di workspace/publish
+        ports:
+        - {name: mcp, containerPort: 8000}
+        readinessProbe:
+          tcpSocket: {port: mcp}
+          periodSeconds: 2
+          failureThreshold: 90 # il primo avvio scarica mcp da PyPI
+        resources:
+          requests: {cpu: 10m, memory: 96Mi}
+          limits: {memory: 256Mi}
+        volumeMounts:
+        - {name: src, mountPath: /app}
+        - {name: work, mountPath: /work}
+        - {name: tmp, mountPath: /tmp}
+      volumes:
+      - name: src
+        projected:
+          sources:
+          - configMap:
+              name: mcp-servers-src
+              items:
+              - {key: trends_server.py, path: trends_server.py}
+              - {key: workspace_server.py, path: workspace_server.py}
+              - {key: publish_server.py, path: publish_server.py}
+              - {key: discussions.json, path: fixtures/discussions.json}
+          - configMap:
+              name: mcp-http-wrapper
+      - {name: work, emptyDir: {}}
+      - {name: tmp, emptyDir: {}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trends
+spec:
+  selector: {app: trends}
+  ports:
+  - {name: mcp, port: 8000, targetPort: mcp}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trends-fixtures
+spec:
+  selector:
+    matchLabels: {app: trends-fixtures}
+  template:
+    metadata:
+      labels: {app: trends-fixtures}
+    spec:
+      containers:
+      - name: mcp
+        image: ghcr.io/astral-sh/uv:0.12.16-python3.14-trixie-slim
+        command: [uv, run, --no-project, --with, "mcp==2.2.0", python, /app/serve_http.py]
+        env:
+        - {name: MCP_MODULE, value: trends_server}
+        - {name: UV_CACHE_DIR, value: /tmp/uv-cache}
+        - {name: TRENDS_FIXTURES, value: "1"}
+        workingDir: /work # ./out di workspace/publish
+        ports:
+        - {name: mcp, containerPort: 8000}
+        readinessProbe:
+          tcpSocket: {port: mcp}
+          periodSeconds: 2
+          failureThreshold: 90 # il primo avvio scarica mcp da PyPI
+        resources:
+          requests: {cpu: 10m, memory: 96Mi}
+          limits: {memory: 256Mi}
+        volumeMounts:
+        - {name: src, mountPath: /app}
+        - {name: work, mountPath: /work}
+        - {name: tmp, mountPath: /tmp}
+      volumes:
+      - name: src
+        projected:
+          sources:
+          - configMap:
+              name: mcp-servers-src
+              items:
+              - {key: trends_server.py, path: trends_server.py}
+              - {key: workspace_server.py, path: workspace_server.py}
+              - {key: publish_server.py, path: publish_server.py}
+              - {key: discussions.json, path: fixtures/discussions.json}
+          - configMap:
+              name: mcp-http-wrapper
+      - {name: work, emptyDir: {}}
+      - {name: tmp, emptyDir: {}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trends-fixtures
+spec:
+  selector: {app: trends-fixtures}
+  ports:
+  - {name: mcp, port: 8000, targetPort: mcp}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workspace
+spec:
+  selector:
+    matchLabels: {app: workspace}
+  template:
+    metadata:
+      labels: {app: workspace}
+    spec:
+      containers:
+      - name: mcp
+        image: ghcr.io/astral-sh/uv:0.12.16-python3.14-trixie-slim
+        command: [uv, run, --no-project, --with, "mcp==2.2.0", python, /app/serve_http.py]
+        env:
+        - {name: MCP_MODULE, value: workspace_server}
+        - {name: UV_CACHE_DIR, value: /tmp/uv-cache}
+        workingDir: /work # ./out di workspace/publish
+        ports:
+        - {name: mcp, containerPort: 8000}
+        readinessProbe:
+          tcpSocket: {port: mcp}
+          periodSeconds: 2
+          failureThreshold: 90 # il primo avvio scarica mcp da PyPI
+        resources:
+          requests: {cpu: 10m, memory: 96Mi}
+          limits: {memory: 256Mi}
+        volumeMounts:
+        - {name: src, mountPath: /app}
+        - {name: work, mountPath: /work}
+        - {name: tmp, mountPath: /tmp}
+      volumes:
+      - name: src
+        projected:
+          sources:
+          - configMap:
+              name: mcp-servers-src
+              items:
+              - {key: trends_server.py, path: trends_server.py}
+              - {key: workspace_server.py, path: workspace_server.py}
+              - {key: publish_server.py, path: publish_server.py}
+              - {key: discussions.json, path: fixtures/discussions.json}
+          - configMap:
+              name: mcp-http-wrapper
+      - {name: work, emptyDir: {}}
+      - {name: tmp, emptyDir: {}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: workspace
+spec:
+  selector: {app: workspace}
+  ports:
+  - {name: mcp, port: 8000, targetPort: mcp}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: publish
+spec:
+  selector:
+    matchLabels: {app: publish}
+  template:
+    metadata:
+      labels: {app: publish}
+    spec:
+      containers:
+      - name: mcp
+        image: ghcr.io/astral-sh/uv:0.12.16-python3.14-trixie-slim
+        command: [uv, run, --no-project, --with, "mcp==2.2.0", python, /app/serve_http.py]
+        env:
+        - {name: MCP_MODULE, value: publish_server}
+        - {name: UV_CACHE_DIR, value: /tmp/uv-cache}
+        workingDir: /work # ./out di workspace/publish
+        ports:
+        - {name: mcp, containerPort: 8000}
+        readinessProbe:
+          tcpSocket: {port: mcp}
+          periodSeconds: 2
+          failureThreshold: 90 # il primo avvio scarica mcp da PyPI
+        resources:
+          requests: {cpu: 10m, memory: 96Mi}
+          limits: {memory: 256Mi}
+        volumeMounts:
+        - {name: src, mountPath: /app}
+        - {name: work, mountPath: /work}
+        - {name: tmp, mountPath: /tmp}
+      volumes:
+      - name: src
+        projected:
+          sources:
+          - configMap:
+              name: mcp-servers-src
+              items:
+              - {key: trends_server.py, path: trends_server.py}
+              - {key: workspace_server.py, path: workspace_server.py}
+              - {key: publish_server.py, path: publish_server.py}
+              - {key: discussions.json, path: fixtures/discussions.json}
+          - configMap:
+              name: mcp-http-wrapper
+      - {name: work, emptyDir: {}}
+      - {name: tmp, emptyDir: {}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: publish
+spec:
+  selector: {app: publish}
+  ports:
+  - {name: mcp, port: 8000, targetPort: mcp}

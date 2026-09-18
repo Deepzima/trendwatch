@@ -4,8 +4,17 @@ jq = "latest"
 ollama = "latest" # nativo sull'host: su macOS usa la GPU (Metal), in Docker andrebbe solo su CPU
 # aqua:docker/compose installa solo "docker-cli-plugin-docker-compose": qui lo rinominiamo in docker-compose
 "github:docker/compose" = { version = "latest", bin = "docker-compose" }
+# variante Kubernetes (k8s/): kind + SIGHUP Distribution
+kind = "0.33.0"
+furyctl = "0.35.1" # SIGHUP Distribution v1.35.1 richiede furyctl >= 0.35.1
+kubectl = "1.35"
+helm = "latest"
+yq = "latest"
 
 [env]
+# credential helper di Docker Desktop (docker-credential-desktop), usato anche da helm e kind
+_.path = ["~/.docker/bin"]
+KUBECONFIG = "{{config_root}}/k8s/.kubeconfig" # cluster kind del progetto (mise run k8s:up)
 # venv del progetto creato e attivato da mise: python/pip in questa dir sono quelli di .venv
 _.python.venv = { path = ".venv", create = true }
 OLLAMA_MODEL = "qwen3:8b"
@@ -215,3 +224,114 @@ run = "docker-compose logs -f"
 [tasks.ui]
 description = "Apre UI agentgateway e Jaeger nel browser"
 run = "open $AGW_UI_URL $JAEGER_URL"
+
+# ---------------------------------------------------------------------------
+# Variante Kubernetes: kind (Cilium) + SIGHUP Distribution (monitoring, tracing) + Zitadel
+# Ollama resta nativo sul Mac. Stesse porte del compose: fermalo prima (mise run down).
+# ---------------------------------------------------------------------------
+
+[tasks."k8s:up"]
+description = "Crea il cluster kind, installa la SIGHUP Distribution e il workshop (MCP server, Zitadel)"
+run = [
+  "mise run k8s:cluster",
+  "mise run k8s:distribution",
+  "mise run k8s:mcp",
+  "mise run k8s:zitadel",
+]
+
+[tasks."k8s:cluster"]
+description = "Crea il cluster kind senza CNI (k8s/kind.yaml)"
+run = "kind get clusters | grep -qx trendwatch || kind create cluster --config k8s/kind.yaml"
+
+[tasks."k8s:distribution"]
+description = "Installa la SIGHUP Distribution con furyctl (Cilium, monitoring, tracing)"
+run = [
+  "furyctl apply --config k8s/furyctl.yaml --outdir k8s --disable-analytics -T",
+  "kubectl apply -f k8s/sighup-nodeports.yaml", # Grafana :3001, OTLP Tempo :4317
+]
+
+[tasks."k8s:mcp"]
+description = "Deploya i server MCP del workshop (immagine pubblica uv, script da ConfigMap)"
+run = [
+  "kubectl create namespace trendwatch --dry-run=client -o yaml | kubectl apply -f -",
+  "kubectl apply -k k8s/mcp-servers",
+  "kubectl -n trendwatch rollout status deploy --timeout=5m",
+]
+
+[tasks."k8s:zitadel"]
+description = "Deploya Zitadel + Postgres, rewrite DNS per zitadel.localtest.me, provisioning degli utenti"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+kubectl create namespace zitadel --dry-run=client -o yaml | kubectl apply -f -
+# segreti generati una sola volta (la masterkey non deve cambiare tra un upgrade e l'altro)
+kubectl -n zitadel get secret zitadel-masterkey >/dev/null 2>&1 \
+  || kubectl -n zitadel create secret generic zitadel-masterkey --from-literal=masterkey="$(openssl rand -hex 16)"
+if ! kubectl -n zitadel get secret zitadel-db >/dev/null 2>&1; then
+  pw=$(openssl rand -hex 16)
+  kubectl -n zitadel create secret generic zitadel-db --from-literal=password="$pw" \
+    --from-literal=dsn="postgresql://zitadel:$pw@postgres.zitadel.svc.cluster.local:5432/zitadel?sslmode=disable"
+fi
+kubectl apply -f k8s/zitadel/postgres.yaml
+kubectl -n zitadel rollout status statefulset/postgres --timeout=5m
+helm upgrade --install zitadel zitadel --repo https://charts.zitadel.com --version 10.0.6 \
+  -n zitadel -f k8s/zitadel/values.yaml --wait --timeout 10m
+kubectl apply -f k8s/zitadel/nodeport.yaml
+# dai pod zitadel.localtest.me deve arrivare al Service (dal Mac risolve già su 127.0.0.1)
+if ! kubectl -n kube-system get configmap coredns -o jsonpath='{.data.Corefile}' | grep -q zitadel.localtest.me; then
+  kubectl -n kube-system get configmap coredns -o yaml \
+    | yq '.data.Corefile |= sub("ready\n"; "ready\n    rewrite name exact zitadel.localtest.me zitadel.zitadel.svc.cluster.local answer auto\n")' \
+    | kubectl replace -f -
+fi
+until curl -sf -o /dev/null http://zitadel.localtest.me:8080/.well-known/openid-configuration; do sleep 2; done
+bash k8s/zitadel/provision.sh
+'''
+
+[tasks."k8s:tokens"]
+description = "Rigenera READER_JWT / PUBLISHER_JWT in zitadel.env (i token scadono dopo 12h)"
+run = "bash k8s/zitadel/provision.sh"
+
+[tasks."k8s:gw"]
+description = "Avvia agentgateway (chart ufficiale) con configs/<config>.yaml adattata a Kubernetes e ne segue i log"
+usage = 'arg "<config>" help="config del lab in configs/, es. llm-basic, mcp-single, mcp-identity"'
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+cfg="${usage_config%.yaml}"
+cfg="${cfg#configs/}"
+if [ ! -f "configs/$cfg.yaml" ]; then
+  echo "configs/$cfg.yaml non esiste. Disponibili:" >&2
+  ls configs/*.yaml | sed 's|configs/||; s|\.yaml$||; s|^|  |' >&2
+  exit 1
+fi
+[ -f zitadel.env ] && source zitadel.env
+export ZITADEL_ISSUER="${ZITADEL_ISSUER:-http://zitadel.localtest.me:8080}" ZITADEL_PROJECT_ID="${ZITADEL_PROJECT_ID:-}"
+kubectl apply -k k8s/agentgateway
+kubectl -n trendwatch create configmap agentgateway-openapi --from-file=configs/github-search.openapi.json \
+  --dry-run=client -o yaml | kubectl apply -f -
+# GITHUB_TOKEN / GEMINI_API_KEY dalla shell (solo quelli definiti), come nel compose
+secret_args=()
+for v in GITHUB_TOKEN GEMINI_API_KEY; do [ -n "${!v:-}" ] && secret_args+=(--from-literal="$v=${!v}"); done
+kubectl -n trendwatch create secret generic agentgateway-secrets ${secret_args[@]+"${secret_args[@]}"} \
+  --dry-run=client -o yaml | kubectl apply -f -
+secrets_sum=$(kubectl -n trendwatch get secret agentgateway-secrets -o jsonpath='{.data}' | shasum | cut -c1-16)
+values=$(mktemp -t agw-values); trap 'rm -f "$values"' EXIT
+yq --from-file k8s/agentgateway/lab-to-k8s.yq "configs/$cfg.yaml" > "$values"
+helm upgrade --install agentgateway oci://ghcr.io/agentgateway/charts/agentgateway-standalone --version 1.5.0 \
+  -n trendwatch -f k8s/agentgateway/values.yaml -f "$values" \
+  --set-string podAnnotations.trendwatch/secrets-checksum="$secrets_sum" --wait --timeout 3m
+echo "agentgateway: configs/$cfg.yaml  (UI $AGW_UI_URL, trace su Grafana http://localhost:3001)"
+kubectl -n trendwatch logs -f deploy/agentgateway
+'''
+
+[tasks."k8s:status"]
+description = "Stato dei pod del workshop e della distribuzione"
+run = "kubectl get pods -A -o wide | grep -E 'NAMESPACE|trendwatch|zitadel|tracing|monitoring|kube-system.*cilium' "
+
+[tasks."k8s:ui"]
+description = "Apre UI agentgateway e Grafana (Explore -> Tempo per le trace)"
+run = "open $AGW_UI_URL http://localhost:3001"
+
+[tasks."k8s:down"]
+description = "Elimina il cluster kind"
+run = "kind delete cluster --name trendwatch"

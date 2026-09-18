@@ -1,0 +1,19 @@
+# Cluster kind per il workshop su Kubernetes.
+# Nessuna CNI di default: Cilium lo installa il modulo networking della SIGHUP Distribution (k8s/furyctl.yaml).
+# Le porte del Mac sono le stesse dello stack compose: l'agente usa gli stessi export delle docs.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: trendwatch
+networking:
+  disableDefaultCNI: true
+  podSubnet: 10.244.0.0/16 # = modules.networking.cilium.podCidr in furyctl.yaml
+nodes:
+- role: control-plane
+  image: kindest/node:v1.35.8@sha256:07b2536e30b803ed61d1677a79df6115f798ce64c80f9e22f6ed45afd09323c0
+  extraPortMappings: # hostPort sul Mac -> NodePort nel cluster
+  - {containerPort: 30300, hostPort: 3000, listenAddress: 127.0.0.1}  # agentgateway MCP
+  - {containerPort: 30400, hostPort: 4000, listenAddress: 127.0.0.1}  # agentgateway LLM
+  - {containerPort: 31500, hostPort: 15000, listenAddress: 127.0.0.1} # agentgateway UI
+  - {containerPort: 30301, hostPort: 3001, listenAddress: 127.0.0.1}  # Grafana
+  - {containerPort: 30417, hostPort: 4317, listenAddress: 127.0.0.1}  # Tempo OTLP gRPC (trace dell'agente sul Mac)
+  - {containerPort: 30080, hostPort: 8080, listenAddress: 127.0.0.1}  # Zitadel

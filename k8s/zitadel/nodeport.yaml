@@ -1,0 +1,13 @@
+# http://zitadel.localtest.me:8080 dal Mac (kind hostPort 8080 -> NodePort 30080).
+apiVersion: v1
+kind: Service
+metadata:
+  name: zitadel-nodeport
+  namespace: zitadel
+spec:
+  type: NodePort
+  selector: # selectorLabels del chart zitadel per la release "zitadel"
+    app.kubernetes.io/name: zitadel
+    app.kubernetes.io/instance: zitadel
+  ports:
+  - {name: http, port: 8080, targetPort: 8080, nodePort: 30080}

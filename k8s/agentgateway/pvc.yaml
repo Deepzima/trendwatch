@@ -1,0 +1,9 @@
+# data.db di agentgateway (request log / pagina Logs della UI), condiviso tra i lab come nel compose.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: agentgateway-data
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests: {storage: 1Gi}

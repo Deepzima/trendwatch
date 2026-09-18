@@ -1,0 +1,32 @@
+# configs/<lab>.yaml (variante compose) -> values Helm {config: ...} per il chart agentgateway-standalone.
+# Uso: ZITADEL_ISSUER=... ZITADEL_PROJECT_ID=... yq --from-file k8s/agentgateway/lab-to-k8s.yq configs/<lab>.yaml
+
+# sqlite sul PVC: la root del container è read-only
+.config.database.url = "sqlite:///data/data.db"
+
+# trace verso Tempo (modulo tracing SIGHUP). protocol esplicito: doc e codice 1.5.0 non concordano sul default
+| .frontendPolicies.tracing.host = "tempo-distributed-distributor.tracing.svc.cluster.local:4317"
+| .frontendPolicies.tracing.protocol = "grpc"
+
+# server MCP: da processi stdio a Service HTTP (k8s/mcp-servers). I nomi dei target restano uguali.
+| with(.mcp.targets[] | select(has("stdio"));
+    (.stdio.args[0] | sub(".*/"; "") | sub("_server\.py$"; "")) as $srv
+    | .mcp.host = "http://" + $srv + ".trendwatch.svc.cluster.local:8000/mcp")
+# trends con TRENDS_FIXTURES=1 (lab prompt-guard/injection) -> Deployment trends-fixtures
+| with(.mcp.targets[] | select(has("stdio") and .stdio.env.TRENDS_FIXTURES == "1");
+    .mcp.host = "http://trends-fixtures.trendwatch.svc.cluster.local:8000/mcp")
+| del(.mcp.targets[].stdio)
+
+# lab MCP authentication: Zitadel al posto di scripts/fake_idp.py
+| with(.mcp.policies.mcpAuthentication | select(. != null);
+    .issuer = strenv(ZITADEL_ISSUER)
+    | .audiences = [strenv(ZITADEL_PROJECT_ID)]
+    | .jwks.url = strenv(ZITADEL_ISSUER) + "/oauth/v2/keys")
+# nei token client-credentials Zitadel mette i ruoli in una mappa sotto
+# urn:zitadel:iam:org:project:<projectId>:roles, non in una lista "roles"
+| ("urn:zitadel:iam:org:project:" + strenv(ZITADEL_PROJECT_ID) + ":roles") as $claim
+| with(.mcp.policies.mcpAuthorization.rules[] | select(test("jwt\.roles"));
+    . = sub("has[(]jwt[.]roles[)] && \"publisher\" in jwt[.]roles";
+            "\"" + $claim + "\" in jwt && \"publisher\" in jwt[\"" + $claim + "\"]"))
+
+| {"config": .}

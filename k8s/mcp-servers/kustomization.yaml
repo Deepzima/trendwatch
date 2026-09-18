@@ -1,0 +1,12 @@
+# Server MCP del workshop come Deployment separati, solo immagini pubbliche.
+# Gli script (invariati) arrivano dalla ConfigMap generata in mcp-servers/, il wrapper HTTP da qui.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: trendwatch
+resources:
+- ../../mcp-servers
+- servers.yaml
+configMapGenerator:
+- name: mcp-http-wrapper
+  files:
+  - serve_http.py

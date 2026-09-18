@@ -1,0 +1,281 @@
+# SIGHUP Distribution sul cluster kind esistente (furyctl apply --outdir k8s).
+# Basato su https://github.com/sighupio/getting-started/blob/main/distro-on-minikube/furyctl.yaml,
+# ridotto a quello che serve al workshop: Cilium (CNI), monitoring (Grafana) e tracing (Tempo).
+apiVersion: kfd.sighup.io/v1alpha2
+kind: KFDDistribution
+metadata:
+  name: trendwatch
+spec:
+  distributionVersion: v1.35.1
+  distribution:
+    kubeconfig: "{env://KUBECONFIG}"
+    modules:
+      networking:
+        type: cilium
+        cilium:
+          podCidr: 10.244.0.0/16 # = networking.podSubnet in kind.yaml
+          maskSize: "24"
+      ingress:
+        baseDomain: trendwatch.internal
+        nginx:
+          type: none
+          tls:
+            provider: none # altrimenti lo schema richiede il blocco certManager
+        haproxy:
+          type: none
+      logging:
+        type: none
+      monitoring:
+        type: prometheus
+        prometheus:
+          retentionTime: 1d
+          storageSize: 5Gi
+        prometheusAdapter:
+          installEnhancedHPAMetrics: false
+          resources: # default: richiede 3Gi (ne usa ~150Mi) e da solo riempie il nodo kind
+            requests:
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+      tracing:
+        type: tempo
+        tempo:
+          retentionTime: 24h
+        minio:
+          storageSize: 5Gi
+      policy:
+        type: none
+      dr:
+        type: none
+      auth:
+        provider:
+          type: none
+    customPatches:
+      patchesStrategicMerge:
+        # kind a nodo singolo: cilium-operator usa porte dell'host, la seconda replica resterebbe Pending
+        - |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: cilium-operator
+            namespace: kube-system
+          spec:
+            replicas: 1
+        # 3 repliche MinIO da 512Mi di request ciascuna: troppo per il nodo kind (8GB di Docker Desktop)
+        - |
+          apiVersion: apps/v1
+          kind: StatefulSet
+          metadata:
+            name: minio-tracing
+            namespace: tracing
+          spec:
+            template:
+              spec:
+                containers:
+                - name: minio
+                  resources:
+                    requests:
+                      memory: 128Mi
+        # --- richieste di memoria vicine all'uso reale (kind a nodo singolo, 8GB di Docker Desktop) ---
+        - |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: kube-state-metrics
+            namespace: monitoring
+          spec:
+            template:
+              spec:
+                containers:
+                - name: kube-state-metrics
+                  resources:
+                    requests:
+                      memory: 64Mi
+        - |
+          apiVersion: apps/v1
+          kind: DaemonSet
+          metadata:
+            name: node-exporter
+            namespace: monitoring
+          spec:
+            template:
+              spec:
+                containers:
+                - name: node-exporter
+                  resources:
+                    requests:
+                      memory: 32Mi
+        - |
+          apiVersion: apps/v1
+          kind: DaemonSet
+          metadata:
+            name: kube-proxy-metrics
+            namespace: monitoring
+          spec:
+            template:
+              spec:
+                containers:
+                - name: kube-proxy-metrics
+                  resources:
+                    requests:
+                      memory: 32Mi
+        - |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: prometheus-operator
+            namespace: monitoring
+          spec:
+            template:
+              spec:
+                containers:
+                - name: prometheus-operator
+                  resources:
+                    requests:
+                      memory: 48Mi
+        - |
+          apiVersion: monitoring.coreos.com/v1
+          kind: Alertmanager
+          metadata:
+            name: main
+            namespace: monitoring
+          spec:
+            resources:
+              requests:
+                memory: 64Mi
+        - |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: tempo-distributed-compactor
+            namespace: tracing
+          spec:
+            template:
+              spec:
+                containers:
+                - name: compactor
+                  resources:
+                    requests:
+                      memory: 48Mi
+        - |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: tempo-distributed-distributor
+            namespace: tracing
+          spec:
+            template:
+              spec:
+                containers:
+                - name: distributor
+                  resources:
+                    requests:
+                      memory: 48Mi
+        - |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: tempo-distributed-gateway
+            namespace: tracing
+          spec:
+            # come gli altri componenti Tempo: con maxSurge il pod nuovo non trova nodo (anti-affinity obbligatoria)
+            strategy:
+              rollingUpdate:
+                maxSurge: 0
+                maxUnavailable: 1
+            template:
+              spec:
+                containers:
+                - name: nginx
+                  resources:
+                    requests:
+                      memory: 48Mi
+        - |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: tempo-distributed-querier
+            namespace: tracing
+          spec:
+            template:
+              spec:
+                containers:
+                - name: querier
+                  resources:
+                    requests:
+                      memory: 48Mi
+        - |
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: tempo-distributed-query-frontend
+            namespace: tracing
+          spec:
+            template:
+              spec:
+                containers:
+                - name: query-frontend
+                  resources:
+                    requests:
+                      memory: 48Mi
+        - |
+          apiVersion: apps/v1
+          kind: StatefulSet
+          metadata:
+            name: tempo-distributed-ingester
+            namespace: tracing
+          spec:
+            template:
+              spec:
+                containers:
+                - name: ingester
+                  resources:
+                    requests:
+                      memory: 48Mi
+        - |
+          apiVersion: apps/v1
+          kind: StatefulSet
+          metadata:
+            name: tempo-distributed-memcached
+            namespace: tracing
+          spec:
+            template:
+              spec:
+                containers:
+                - name: memcached
+                  resources:
+                    requests:
+                      memory: 32Mi
+        # un solo nodo: le repliche in più degli HPA di Tempo resterebbero Pending (anti-affinity)
+        - |
+          apiVersion: autoscaling/v2
+          kind: HorizontalPodAutoscaler
+          metadata:
+            name: tempo-distributed-distributor
+            namespace: tracing
+          spec:
+            maxReplicas: 1
+        - |
+          apiVersion: autoscaling/v2
+          kind: HorizontalPodAutoscaler
+          metadata:
+            name: tempo-distributed-gateway
+            namespace: tracing
+          spec:
+            maxReplicas: 1
+        - |
+          apiVersion: autoscaling/v2
+          kind: HorizontalPodAutoscaler
+          metadata:
+            name: tempo-distributed-querier
+            namespace: tracing
+          spec:
+            maxReplicas: 1
+        # come nel getting-started su minikube: non compatibile con i certificati del control plane locale
+        - |
+          $patch: delete
+          apiVersion: apps/v1
+          kind: DaemonSet
+          metadata:
+            name: x509-certificate-exporter-control-plane
+            namespace: monitoring

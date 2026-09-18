@@ -1,0 +1,51 @@
+# Postgres per Zitadel (immagine ufficiale). Il Secret zitadel-db (password, dsn) lo crea `mise run k8s:zitadel`.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: zitadel
+spec:
+  serviceName: postgres
+  selector:
+    matchLabels: {app: postgres}
+  template:
+    metadata:
+      labels: {app: postgres}
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:18.6
+        env:
+        - {name: POSTGRES_USER, value: zitadel}
+        - {name: POSTGRES_DB, value: zitadel}
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef: {name: zitadel-db, key: password}
+        ports:
+        - {name: postgres, containerPort: 5432}
+        readinessProbe:
+          exec:
+            command: [pg_isready, -U, zitadel, -d, zitadel]
+          periodSeconds: 3
+        resources:
+          requests: {cpu: 50m, memory: 128Mi}
+          limits: {memory: 512Mi}
+        volumeMounts:
+        - {name: data, mountPath: /var/lib/postgresql} # postgres >= 18: PGDATA in /var/lib/postgresql/18/docker
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ReadWriteOnce]
+      resources:
+        requests: {storage: 1Gi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: zitadel
+spec:
+  selector: {app: postgres}
+  ports:
+  - {name: postgres, port: 5432, targetPort: postgres}

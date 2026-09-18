@@ -1,0 +1,10 @@
+# ConfigMap con gli script MCP del workshop, usata dalla variante Kubernetes (k8s/mcp-servers).
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+configMapGenerator:
+- name: mcp-servers-src
+  files:
+  - trends_server.py
+  - workspace_server.py
+  - publish_server.py
+  - fixtures/discussions.json

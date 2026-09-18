@@ -1,0 +1,31 @@
+# Values base del chart oci://ghcr.io/agentgateway/charts/agentgateway-standalone (1.5.0).
+# La config del lab (`config:`) la genera `mise run k8s:gw <lab>` da configs/<lab>.yaml (lab-to-k8s.yq).
+image: # immagine ufficiale pubblica (distroless): i server MCP girano in pod separati (k8s/mcp-servers)
+  registry: ghcr.io
+  repository: agentgateway/agentgateway
+  tag: v1.5.0
+extraEnv:
+- {name: ADMIN_ADDR, value: "0.0.0.0:15000"} # UI raggiungibile dal NodePort, come nel compose
+# $GITHUB_TOKEN (lab credential-injection) e $GEMINI_API_KEY (config -gemini): Secret creato da
+# `mise run k8s:gw` con i valori della shell, come il passthrough del compose
+- name: GITHUB_TOKEN
+  valueFrom:
+    secretKeyRef: {name: agentgateway-secrets, key: GITHUB_TOKEN, optional: true}
+- name: GEMINI_API_KEY
+  valueFrom:
+    secretKeyRef: {name: agentgateway-secrets, key: GEMINI_API_KEY, optional: true}
+extraVolumes:
+- name: data # sqlite (pagina Logs della UI): la root del container è read-only
+  persistentVolumeClaim: {claimName: agentgateway-data}
+- name: openapi # configs/github-search.openapi.json, relativo alla working dir "/" dell'immagine
+  configMap: {name: agentgateway-openapi}
+extraVolumeMounts:
+- {name: data, mountPath: /data}
+- {name: openapi, mountPath: /configs, readOnly: true}
+gateway:
+  service:
+    enabled: false # uso il mio Service NodePort (nodeport.yaml): il chart non permette di fissare i nodePort
+monitoring:
+  enabled: true # PodMonitor: metriche :15020 nel Prometheus della SIGHUP Distribution
+resources:
+  requests: {cpu: 50m, memory: 64Mi}

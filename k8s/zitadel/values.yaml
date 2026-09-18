@@ -1,0 +1,31 @@
+# Zitadel (chart zitadel/zitadel) per il lab MCP authentication, al posto di scripts/fake_idp.py.
+# Stesso URL dal Mac e dai pod: http://zitadel.localtest.me:8080
+#   Mac:  *.localtest.me -> 127.0.0.1 -> kind hostPort 8080 -> NodePort 30080 (nodeport.yaml)
+#   pod:  rewrite CoreDNS zitadel.localtest.me -> zitadel.zitadel.svc.cluster.local (porta 8080)
+zitadel:
+  masterkeySecretName: zitadel-masterkey # creato una sola volta da `mise run k8s:zitadel`
+  configmapConfig:
+    ExternalDomain: zitadel.localtest.me
+    ExternalPort: 8080
+    ExternalSecure: false
+    TLS:
+      Enabled: false
+    # Il chart crea il machine user iam-admin (IAM_OWNER) e ne salva il PAT nel Secret iam-admin-pat:
+    # lo usa il provisioning (k8s/zitadel/provision.sh) per creare progetto, ruolo e machine user.
+    FirstInstance:
+      Org:
+        Machine:
+          Machine:
+            Username: iam-admin
+            Name: IAM Admin (provisioning)
+          MachineKey:
+            ExpirationDate: "2029-01-01T00:00:00Z"
+            Type: 1
+          Pat:
+            ExpirationDate: "2029-01-01T00:00:00Z"
+env:
+- name: ZITADEL_DATABASE_POSTGRES_DSN
+  valueFrom:
+    secretKeyRef: {name: zitadel-db, key: dsn}
+login:
+  enabled: false # servono solo machine user (client credentials), niente login interattivo
