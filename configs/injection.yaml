@@ -6,6 +6,10 @@ frontendPolicies:
   tracing:
     host: jaeger:4317
     randomSampling: true
+  # prompt e completion completi in data.db (pagina Logs della UI)
+  accessLog:
+    database:
+      llm: full
 llm:
   models:
   - name: trend-pro

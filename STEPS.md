@@ -62,7 +62,8 @@ export LLM_MODEL=trend-pro
 python3 agent/trendwatch.py "what discussions are trending today?"
 ```
 
-UI: http://localhost:15000/ui (`mise run ui`). Le impostazioni salvate dalla UI (es. prompt logging) vengono scritte nella config in uso, qui `configs/llm-basic.yaml`.
+UI: http://localhost:15000/ui (`mise run ui`). Il prompt logging è già attivo in tutte le config: nella pagina Logs trovi prompt e completion senza doverlo abilitare, e le trace sono già su Jaeger (http://localhost:16686, service `agentgateway`).
+Le impostazioni salvate dalla UI vengono scritte solo nella config in uso (qui `configs/llm-basic.yaml`) e non valgono per gli altri lab.
 
 Token budget: **T1**
 ```shell
@@ -170,6 +171,8 @@ Le config in `configs/` sono adattate per agentgateway in container:
 - server MCP stdio: `cmd: .venv/bin/python3` → `cmd: python3` (il Python dell'immagine)
 - JWKS del fake IdP: `localhost:9000` → `host.docker.internal:9000` (`issuer` e `audiences` restano `localhost`: sono stringhe confrontate con i claim dei JWT)
 - `mcp.statefulMode: stateless`: l'SDK `mcp` 2.x (spec MCP 2026-07-28) non usa sessioni; senza questa riga agentgateway 1.5.0 risponde `session header is required` (vale anche col binario nativo)
+- tutte le config hanno `frontendPolicies.tracing` (verso Jaeger, anche i lab LLM che nell'originale non tracciavano) e `frontendPolicies.accessLog.database.llm: full` (prompt e completion in `data.db`, visibili nella pagina Logs della UI; `data.db` è condiviso tra i lab)
+- il tracing viene letto solo all'avvio: se modifichi a mano la sezione `tracing` di una config, rilancia `mise run gw <config>` (il reload a caldo non la applica)
 
 Nel compose IPv6 è disabilitato nel container di agentgateway: `host.docker.internal` risolve anche in IPv6, che non è raggiungibile, e il fetch del JWKS non ripiega su IPv4.
 
