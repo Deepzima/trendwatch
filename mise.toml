@@ -1,0 +1,217 @@
+[tools]
+python = "3.14" # workshop: >= 3.11
+jq = "latest"
+ollama = "latest" # nativo sull'host: su macOS usa la GPU (Metal), in Docker andrebbe solo su CPU
+# aqua:docker/compose installa solo "docker-cli-plugin-docker-compose": qui lo rinominiamo in docker-compose
+"github:docker/compose" = { version = "latest", bin = "docker-compose" }
+
+[env]
+# venv del progetto creato e attivato da mise: python/pip in questa dir sono quelli di .venv
+_.python.venv = { path = ".venv", create = true }
+OLLAMA_MODEL = "qwen3:8b"
+OLLAMA_URL = "http://127.0.0.1:11434"
+AGW_UI_URL = "http://localhost:15000/ui"
+JAEGER_URL = "http://localhost:16686"
+
+# ---------------------------------------------------------------------------
+# Prerequisiti
+# ---------------------------------------------------------------------------
+
+[tasks.check]
+description = "Verifica i prerequisiti (python, dipendenze, jq, docker, compose, immagini, ollama, qwen)"
+run = '''
+#!/usr/bin/env bash
+set -uo pipefail
+fail=0
+ok()   { printf '  \033[32m✔\033[0m %s\n' "$*"; }
+ko()   { printf '  \033[31m✘\033[0m %s\n' "$*"; fail=1; }
+warn() { printf '  \033[33m!\033[0m %s\n' "$*"; }
+
+echo "Python"
+if python -c 'import sys; sys.exit(sys.version_info < (3, 11))' 2>/dev/null; then
+  ok "python $(python -c 'import platform; print(platform.python_version())') ($(python -c 'import sys; print(sys.prefix)'))"
+else
+  ko "python >= 3.11 mancante -> mise install"
+fi
+if python -c 'import mcp, openai, jwt, cryptography' 2>/dev/null; then
+  ok "dipendenze requirements.txt installate"
+else
+  ko "dipendenze mancanti -> mise run deps"
+fi
+
+echo "Tools"
+command -v jq >/dev/null && ok "$(jq --version)" || ko "jq mancante -> mise install"
+command -v ollama >/dev/null && ok "ollama $(ollama -v 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | tail -1)" || ko "ollama mancante -> mise install"
+
+echo "Docker"
+if command -v docker >/dev/null; then ok "docker CLI $(docker version --format json 2>/dev/null | jq -r .Client.Version)"; else ko "docker CLI mancante"; fi
+compose=0
+if command -v docker-compose >/dev/null; then ok "docker-compose $(docker-compose version --short)"; compose=1; else ko "docker-compose mancante -> mise install"; fi
+daemon=0
+if docker info >/dev/null 2>&1; then
+  ok "daemon attivo ($(docker info --format json 2>/dev/null | jq -r .OperatingSystem))"; daemon=1
+else
+  ko "daemon non raggiungibile"
+fi
+if [ $daemon = 1 ] && [ $compose = 1 ]; then
+  for img in $(docker-compose config --images); do
+    docker image inspect "$img" >/dev/null 2>&1 && ok "immagine $img" || ko "immagine $img non presente -> mise run docker:build"
+  done
+else
+  warn "check immagini saltato (serve daemon + compose)"
+fi
+
+echo "Ollama"
+if curl -sf "$OLLAMA_URL/api/version" >/dev/null; then
+  ok "server attivo su $OLLAMA_URL (v$(curl -s "$OLLAMA_URL/api/version" | jq -r .version))"
+  if curl -s "$OLLAMA_URL/api/tags" | jq -e --arg m "$OLLAMA_MODEL" 'any(.models[]; .name == $m)' >/dev/null; then
+    ok "modello $OLLAMA_MODEL presente"
+  else
+    ko "modello $OLLAMA_MODEL non presente -> mise run ollama:pull"
+  fi
+else
+  ko "server non attivo -> mise run ollama:serve"
+fi
+
+echo
+[ $fail = 0 ] && echo "Tutti i prerequisiti sono OK" || { echo "Alcuni prerequisiti mancano (vedi sopra)"; exit 1; }
+'''
+
+[tasks.deps]
+description = "Installa requirements.txt nel venv del progetto"
+run = "python -m pip install -r requirements.txt"
+
+[tasks.setup]
+description = "Prepara tutto: dipendenze python, immagini Docker, modello Qwen"
+depends = ["deps", "docker:build", "ollama:pull"]
+
+# ---------------------------------------------------------------------------
+# Ollama (nativo)
+# ---------------------------------------------------------------------------
+
+[tasks."ollama:serve"]
+description = "Avvia 'ollama serve' in background (se non è già attivo)"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+if curl -sf "$OLLAMA_URL/api/version" >/dev/null; then
+  echo "Ollama già attivo su $OLLAMA_URL"; exit 0
+fi
+mkdir -p .run
+nohup ollama serve > .run/ollama.log 2>&1 &
+echo $! > .run/ollama.pid
+for _ in $(seq 1 30); do
+  if curl -sf "$OLLAMA_URL/api/version" >/dev/null; then
+    echo "Ollama avviato (pid $(cat .run/ollama.pid), log .run/ollama.log)"; exit 0
+  fi
+  sleep 1
+done
+echo "Ollama non risponde dopo 30s, vedi .run/ollama.log" >&2; exit 1
+'''
+
+[tasks."ollama:stop"]
+description = "Ferma l'ollama serve avviato da ollama:serve"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+if [ -f .run/ollama.pid ] && kill "$(cat .run/ollama.pid)" 2>/dev/null; then
+  echo "Ollama fermato"
+else
+  echo "Nessun ollama avviato da questo progetto (.run/ollama.pid)"
+fi
+rm -f .run/ollama.pid
+'''
+
+[tasks."ollama:pull"]
+description = "Scarica il modello Qwen 3 8B"
+depends = ["ollama:serve"]
+run = "ollama pull $OLLAMA_MODEL"
+
+[tasks."ollama:check"]
+description = "Verifica Ollama + qwen3:8b con una inferenza reale"
+depends = ["ollama:serve"]
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+echo "Ollama v$(curl -s "$OLLAMA_URL/api/version" | jq -r .version)"
+curl -s "$OLLAMA_URL/api/tags" | jq -e --arg m "$OLLAMA_MODEL" 'any(.models[]; .name == $m)' >/dev/null \
+  || { echo "Modello $OLLAMA_MODEL non presente -> mise run ollama:pull" >&2; exit 1; }
+curl -s "$OLLAMA_URL/api/show" -d "{\"model\":\"$OLLAMA_MODEL\"}" \
+  | jq -r '"Modello: \(.details.family) \(.details.parameter_size) \(.details.quantization_level)"'
+echo "Inferenza di prova (think=false)..."
+jq -n --arg m "$OLLAMA_MODEL" \
+  '{model: $m, stream: false, think: false, messages: [{role: "user", content: "Rispondi solo con: OK"}]}' \
+  | curl -sf "$OLLAMA_URL/api/chat" -d @- \
+  | jq -r '"Risposta: \(.message.content)", "Velocità: \(.eval_count / (.eval_duration / 1e9) | floor) token/s"'
+'''
+
+# ---------------------------------------------------------------------------
+# Docker compose: Jaeger + agentgateway
+# ---------------------------------------------------------------------------
+
+[tasks."docker:build"]
+description = "Pull di Jaeger + build dell'immagine agentgateway (con Python per i server MCP stdio)"
+run = [
+  "docker-compose pull --ignore-buildable",
+  "docker-compose build",
+]
+
+[tasks.up]
+description = "Avvia Ollama (nativo) + Jaeger. agentgateway si avvia per lab: mise run gw <config>"
+depends = ["ollama:serve"]
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+docker-compose up -d jaeger
+echo "Jaeger UI: $JAEGER_URL"
+'''
+
+[tasks.gw]
+description = "Avvia agentgateway con configs/<config>.yaml e ne segue i log (Ctrl-C: il gateway resta attivo)"
+usage = 'arg "<config>" help="config del lab in configs/, es. llm-basic, mcp-single, prompt-guard"'
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+cfg="${usage_config%.yaml}"
+cfg="${cfg#configs/}"
+if [ ! -f "configs/$cfg.yaml" ]; then
+  echo "configs/$cfg.yaml non esiste. Disponibili:" >&2
+  ls configs/*.yaml | sed 's|configs/||; s|\.yaml$||; s|^|  |' >&2
+  exit 1
+fi
+AGW_CONFIG="$cfg" docker-compose up -d --force-recreate agentgateway
+echo "agentgateway: configs/$cfg.yaml  (UI $AGW_UI_URL)"
+docker-compose logs -f agentgateway
+'''
+
+[tasks."gw:stop"]
+description = "Ferma agentgateway"
+run = "docker-compose stop agentgateway"
+
+[tasks."gw:test"]
+description = "Chiama trend-pro passando da agentgateway (config con llm, es. llm-basic)"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+echo "Modelli esposti da agentgateway:"
+curl -sf http://localhost:4000/v1/models | jq -r '.data[].id | "  - \(.)"'
+jq -n '{model: "trend-pro", messages: [{role: "user", content: "/no_think say hi"}]}' \
+  | curl -sf http://localhost:4000/v1/chat/completions -H 'content-type: application/json' -d @- \
+  | jq -r '"Modello : \(.model)", "Risposta: \(.choices[0].message.content | gsub("<think>\\s*</think>\\s*"; ""))", "Token   : \(.usage.prompt_tokens) in / \(.usage.completion_tokens) out"'
+'''
+
+[tasks.down]
+description = "Ferma Jaeger + agentgateway (Ollama resta attivo: mise run ollama:stop)"
+run = "docker-compose down"
+
+[tasks.ps]
+description = "Stato dei container"
+run = "docker-compose ps"
+
+[tasks.logs]
+description = "Log dei container (follow)"
+run = "docker-compose logs -f"
+
+[tasks.ui]
+description = "Apre UI agentgateway e Jaeger nel browser"
+run = "open $AGW_UI_URL $JAEGER_URL"

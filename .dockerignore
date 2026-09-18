@@ -1,0 +1,3 @@
+# Il build di agentgateway.Dockerfile usa solo requirements.txt (il repo è montato a runtime)
+*
+!requirements.txt

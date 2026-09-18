@@ -21,3 +21,6 @@ site/
 data.db
 data.db-shm
 data.db-wal
+
+# mise: log/pid di ollama serve
+.run/

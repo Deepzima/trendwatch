@@ -10,6 +10,8 @@ llm:
       model: gemini-3.5-flash-lite
       apiKey: "$GEMINI_API_KEY"
 mcp:
+  # client MCP 2026-07-28 (mcp>=2.0): niente sessione, niente Mcp-Session-Id
+  statefulMode: stateless
   targets:
   - name: github
     openapi:

@@ -4,7 +4,7 @@ config:
     url: sqlite://./data.db
 frontendPolicies:
   tracing:
-    host: localhost:4317
+    host: jaeger:4317
     randomSampling: true
 llm:
   policies:
@@ -39,22 +39,24 @@ llm:
   - name: trend-pro
     provider: openAI
     params:
-      baseUrl: http://localhost:11434/v1
+      baseUrl: http://host.docker.internal:11434/v1
       model: qwen3:8b
       apiKey: ollama-does-not-check-this
 mcp:
+  # client MCP 2026-07-28 (mcp>=2.0): niente sessione, niente Mcp-Session-Id
+  statefulMode: stateless
   targets:
   - name: trends
     stdio:
-      cmd: .venv/bin/python3
+      cmd: python3
       args: ["./mcp-servers/trends_server.py"]
       env:
         TRENDS_FIXTURES: "1"
   - name: workspace
     stdio:
-      cmd: .venv/bin/python3
+      cmd: python3
       args: ["./mcp-servers/workspace_server.py"]
   - name: publish
     stdio:
-      cmd: .venv/bin/python3
+      cmd: python3
       args: ["./mcp-servers/publish_server.py"]

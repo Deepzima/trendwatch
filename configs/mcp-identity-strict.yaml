@@ -7,10 +7,12 @@ llm:
   - name: trend-pro
     provider: openAI
     params:
-      baseUrl: http://localhost:11434/v1
+      baseUrl: http://host.docker.internal:11434/v1
       model: qwen3:8b
       apiKey: ollama-does-not-check-this
 mcp:
+  # client MCP 2026-07-28 (mcp>=2.0): niente sessione, niente Mcp-Session-Id
+  statefulMode: stateless
   policies:
     mcpAuthentication:
       mode: strict
@@ -18,7 +20,7 @@ mcp:
       audiences:
       - http://localhost:3000/mcp
       jwks:
-        url: http://localhost:9000/.well-known/jwks.json
+        url: http://host.docker.internal:9000/.well-known/jwks.json
       resourceMetadata:
         resource: http://localhost:3000/mcp
         scopesSupported:
@@ -34,16 +36,16 @@ mcp:
   targets:
   - name: trends
     stdio:
-      cmd: .venv/bin/python3
+      cmd: python3
       args:
       - ./mcp-servers/trends_server.py
   - name: workspace
     stdio:
-      cmd: .venv/bin/python3
+      cmd: python3
       args:
       - ./mcp-servers/workspace_server.py
   - name: publish
     stdio:
-      cmd: .venv/bin/python3
+      cmd: python3
       args:
       - ./mcp-servers/publish_server.py
